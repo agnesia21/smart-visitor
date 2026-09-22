@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Visitor - Check In</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+    :root {
+        --navy: #0c1e38;
+        --navy-2: #122b4b;
+        --blue: #5d9cf0;
+        --purple: #7467e8;
+        --line: #e8eef6;
+        --muted: #8a9ab0;
+        --bg: #f2f5f9;
+        --warn: #d9822b;
+        --warn-bg: #fdf1e3;
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background:
+            radial-gradient(1200px 600px at 20% -10%, #eaf1ff 0%, transparent 60%),
+            radial-gradient(1000px 500px at 100% 0%, #f1edff 0%, transparent 55%),
+            var(--bg);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+
+    .chat-container {
+        width: 100%;
+        max-width: 560px;
+
+        background: white;
+
+        border-radius: 22px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 24px 60px -12px rgba(12, 30, 56, 0.25),
+            0 2px 8px rgba(12, 30, 56, 0.06);
+
+        display: flex;
+        flex-direction: column;
+
+        max-height: 88vh;
+    }
+
+    /* ==========================================
+       HEADER
+    =========================================== */
+
+    .chat-header {
+        display: block !important;
+        background: linear-gradient(135deg, var(--navy), var(--navy-2));
+        color: white;
+
+        padding: 22px 24px;
+
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chat-header::after {
+        content: "";
+        position: absolute;
+        top: -40%;
+        right: -10%;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #ffffff14 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .header-title {
+        display: flex !important;
+        align-items: center;
+        gap: 14px;
+
+        position: relative;
+        z-index: 1;
+        width: 100%;
+    }
+
+    .header-icon {
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+
+        border-radius: 14px;
+
+        background: linear-gradient(135deg, var(--blue), var(--purple));
+
+        display: grid;
+        place-items: center;
+
+        font-size: 21px;
+        font-weight: 800;
+        color: white;
+
+        box-shadow: 0 6px 16px rgba(93, 156, 240, 0.35);
+    }
+
+    .header-title h1 {
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -.2px;
+    }
+
+    .header-title p {
+        font-size: 11px;
+        color: #a9bcd6;
+        margin-top: 2px;
+        letter-spacing: .2px;
+    }
+
+    /* PROGRESS BAR */
+
+    .progress-wrap {
+        margin-top: 16px;
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        display: block !important;
+    }
+
+    .progress-labels {
+        display: flex !important;
+        justify-content: space-between;
+        width: 100%;
+        font-size: 10px;
+        color: #a9bcd6;
+        margin-bottom: 6px;
+        font-weight: 700;
+        letter-spacing: .3px;
+        gap: 10px;
+    }
+
+    .progress-track {
+        height: 6px;
+        background: #ffffff1a;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        width: 12.5%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--blue), var(--purple));
+        transition: width .35s ease;
+    }
+
+    /* ==========================================
+       CHAT AREA
+    =========================================== */
+
+    .chat-area {
+        flex: 1;
+        overflow-y: auto;
+
+        padding: 22px 20px;
+
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        background: #fafbfe;
+    }
+
+    .chat-area::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-area::-webkit-scrollbar-thumb {
+        background: #d7e0ec;
+        border-radius: 999px;
+    }
+
+    .message {
+        display: flex;
+        max-width: 88%;
+    }
+
+    .message.ai {
+        align-self: flex-start;
+    }
+
+    .message.user {
+        align-self: flex-end;
+    }
+
+    .bubble {
+        padding: 13px 16px;
+        border-radius: 16px;
+        font-size: 13.5px;
+        line-height: 1.65;
+    }
+
+    .message.ai .bubble {
+        background: white;
+        color: #1a2b44;
+        border: 1px solid var(--line);
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 4px 14px #1a33520a;
+    }
+
+    .message.user .bubble {
+        background: linear-gradient(135deg, var(--navy), var(--navy-2));
+        color: white;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 6px 16px rgba(12, 30, 56, 0.22);
+    }
+
+    .message.ai .bubble b {
+        color: #24518a;
+    }
+
+    /* REJECTED FIELD TAGS */
+
+    .rejected-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .field-tag {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: var(--warn);
+        background: var(--warn-bg);
+        border: 1px solid #f3ddb9;
+        border-radius: 999px;
+        padding: 4px 10px;
+    }
+
+    /* SUMMARY CARD */
+
+    .summary {
+        margin-top: 10px;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 4px 16px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 3px 10px #1a33520a;
+    }
+
+    .summary-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 11px 0;
+        border-bottom: 1px solid #eef1f6;
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        white-space: nowrap;
+    }
+
+    .summary-value {
+        font-size: 13px;
+        font-weight: 700;
+        color: #16233e;
+        text-align: right;
+    }
+
+    .confirm-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .confirm-buttons button {
+        flex: 1;
+        min-width: 0;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 10px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .15s ease;
+        font-family: inherit;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .confirm-buttons .confirm {
+        background: linear-gradient(135deg, #2a9d6f, #1f8a5c);
+        color: white;
+        box-shadow: 0 6px 16px rgba(31, 138, 92, 0.3);
+    }
+
+    .confirm-buttons .confirm:hover {
+        filter: brightness(1.05);
+    }
+
+    .confirm-buttons .repeat {
+        background: white;
+        color: #60738e;
+        border: 1px solid var(--line);
+    }
+
+    .confirm-buttons .repeat:hover {
+        background: #f5f7fb;
+    }
+
+    /* FINISH / BACK TO HOME BUTTON */
+
+    .finish-buttons {
+        margin-top: 16px;
+    }
+
+    .finish-home {
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        padding: 13px 12px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .15s ease;
+        font-family: inherit;
+        background: linear-gradient(135deg, var(--navy), var(--navy-2));
+        color: white;
+        box-shadow: 0 6px 16px rgba(12, 30, 56, 0.25);
+    }
+
+    .finish-home:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+    }
+
+    /* TYPING INDICATOR */
+
+    .typing {
+        display: flex;
+        gap: 5px;
+        padding: 0 20px 10px;
+        align-items: center;
+    }
+
+    .typing span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #b7c3d6;
+        animation: typingBounce 1.1s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) {
+        animation-delay: .15s;
+    }
+
+    .typing span:nth-child(3) {
+        animation-delay: .3s;
+    }
+
+    @keyframes typingBounce {
+        0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+        30% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* ==========================================
+       INPUT AREA
+    =========================================== */
+
+    .input-area {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+
+        padding: 16px 20px;
+        background: white;
+        border-top: 1px solid var(--line);
+    }
+
+    .input-area input {
+        flex: 1;
+        height: 46px;
+        border: 1.5px solid var(--line);
+        border-radius: 12px;
+        padding: 0 16px;
+        font-size: 13.5px;
+        outline: none;
+        transition: border-color .15s ease, box-shadow .15s ease;
+        background: #fafbfe;
+    }
+
+    .input-area input:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(93, 156, 240, 0.15);
+        background: white;
+    }
+
+    .input-area input:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+    }
+
+    .input-area button {
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+
+        border: none;
+        border-radius: 12px;
+
+        background: linear-gradient(135deg, var(--navy), var(--navy-2));
+        color: white;
+
+        font-size: 17px;
+
+        cursor: pointer;
+
+        display: grid;
+        place-items: center;
+
+        transition: transform .15s ease, box-shadow .15s ease;
+
+        box-shadow: 0 6px 16px rgba(12, 30, 56, 0.25);
+    }
+
+    .input-area button:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .input-area button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(12, 30, 56, 0.3);
+    }
+
+    .input-area button:active {
+        transform: translateY(0);
+    }
+
+    .input-hint {
+        text-align: center;
+        font-size: 10.5px;
+        color: var(--muted);
+        padding: 0 0 16px;
+        background: white;
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 0;
+        }
+
+        .chat-container {
+            max-width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            border-radius: 0;
+        }
+    }
+    </style>
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <!-- ==========================================
+         HEADER
+    =========================================== -->
+    <div class="chat-header">
+
+        <div class="header-title">
+
+            <span class="header-icon">✦</span>
+
+            <div>
+                <h1>Smart Visitor</h1>
+                <p>Visitor Assistant</p>
+            </div>
+
+        </div>
+
+        <div class="progress-wrap">
+
+            <div class="progress-labels">
+                <span id="progressLabel">Langkah 1 dari 8</span>
+                <span id="progressPercent">13%</span>
+            </div>
+
+            <div class="progress-track">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         AREA CHAT
+    =========================================== -->
+    <div class="chat-area" id="chatArea">
+
+        <div class="message ai">
+
+            <div class="bubble">
+
+                👋 Halo! Saya
+                <b>Smart Visitor Assistant.</b>
+
+                <br><br>
+
+                Saya akan membantu Anda melakukan
+                proses check-in.
+
+                Mari kita mulai.
+
+                <br><br>
+
+                Siapa nama lengkap Anda?
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         TYPING
+    =========================================== -->
+    <div
+        id="typing"
+        class="typing"
+        style="display:none;"
+    >
+
+        <span></span>
+        <span></span>
+        <span></span>
+
+    </div>
+
+
+    <!-- ==========================================
+         INPUT
+    =========================================== -->
+    <div class="input-area">
+
+        <input
+            type="text"
+            id="userInput"
+            placeholder="Ketik jawaban Anda..."
+            autocomplete="off"
+        >
+
+        <button
+            type="button"
+            id="sendButton"
+            aria-label="Kirim"
+        >
+            ➤
+        </button>
+
+    </div>
+
+
+    <div class="input-hint">
+        Tekan Enter untuk mengirim
+    </div>
+
+</div>
+
+
+<script>
+
+/*
+==========================================
+ELEMENT
+==========================================
+*/
+
+const chatArea =
+    document.getElementById("chatArea");
+
+const userInput =
+    document.getElementById("userInput");
+
+const sendButton =
+    document.getElementById("sendButton");
+
+const typing =
+    document.getElementById("typing");
+
+
+/*
+==========================================
+DATA PENGUNJUNG
+(diisi dari applied_fields yang dikirim
+ balik oleh /ask_ai, bukan lagi dari
+ validasi lokal)
+==========================================
+*/
+
+let visitorData = {
+
+    nama: "",
+    jenis_identitas: "",
+    nomor_identitas: "",
+    no_hp: "",
+    instansi: "",
+    bertemu_dengan: "",
+    keperluan: "",
+    status_kartu: ""
+
+};
+
+
+/*
+==========================================
+RIWAYAT PERCAKAPAN (hanya untuk render UI,
+tidak dikirim ke server — server menyimpan
+state percakapannya sendiri)
+==========================================
+*/
+
+let conversation = [];
+
+let isFinalized = false;
+
+
+/*
+==========================================
+DAFTAR FIELD (hanya dipakai untuk
+menghitung progress & label ringkasan,
+BUKAN untuk validasi)
+==========================================
+*/
+
+const ALL_FIELDS = [
+    "nama",
+    "jenis_identitas",
+    "nomor_identitas",
+    "no_hp",
+    "instansi",
+    "bertemu_dengan",
+    "keperluan",
+    "status_kartu"
+];
+
+const FIELD_LABELS = {
+    nama: "Nama",
+    jenis_identitas: "Identitas",
+    nomor_identitas: "Nomor",
+    no_hp: "No. HP",
+    instansi: "Instansi",
+    bertemu_dengan: "Bertemu dengan",
+    keperluan: "Keperluan",
+    status_kartu: "Status Kartu"
+};
+
+const TOTAL_LANGKAH = ALL_FIELDS.length;
+
+
+/*
+==========================================
+PROGRESS BAR
+==========================================
+*/
+
+function updateProgress(step) {
+
+    const progressBar =
+        document.getElementById("progressBar");
+
+    const progressLabel =
+        document.getElementById("progressLabel");
+
+    const progressPercent =
+        document.getElementById("progressPercent");
+
+    if (!progressBar) {
+        return;
+    }
+
+    const clamped =
+        Math.max(1, Math.min(step, TOTAL_LANGKAH));
+
+    const percent =
+        Math.round((clamped / TOTAL_LANGKAH) * 100);
+
+    progressBar.style.width = percent + "%";
+    progressLabel.textContent =
+        "Langkah " + clamped + " dari " + TOTAL_LANGKAH;
+    progressPercent.textContent = percent + "%";
+
+}
+
+function computeStep() {
+
+    const filled =
+        ALL_FIELDS.filter(
+            f => !!visitorData[f]
+        ).length;
+
+    return Math.min(
+        filled + 1,
+        TOTAL_LANGKAH
+    );
+}
+
+updateProgress(1);
+
+
+/*
+==========================================
+TAMBAH PESAN
+==========================================
+*/
+
+function addMessage(text, type) {
+
+    const message =
+        document.createElement("div");
+
+    message.className =
+        "message " + type;
+
+    message.innerHTML = `
+        <div class="bubble">
+            ${text}
+        </div>
+    `;
+
+    chatArea.appendChild(message);
+
+    chatArea.scrollTop =
+        chatArea.scrollHeight;
+}
+
+
+/*
+==========================================
+TYPING HELPER
+==========================================
+*/
+
+async function showTyping() {
+
+    typing.style.display = "block";
+
+    chatArea.scrollTop =
+        chatArea.scrollHeight;
+
+    await new Promise(resolve => {
+        setTimeout(resolve, 500);
+    });
+}
+
+function hideTyping() {
+
+    typing.style.display = "none";
+}
+
+
+/*
+==========================================
+TAG FIELD YANG DITOLAK
+==========================================
+*/
+
+function renderRejectedTags(rejectedFields) {
+
+    if (!rejectedFields) {
+        return "";
+    }
+
+    const keys =
+        Array.isArray(rejectedFields)
+            ? rejectedFields
+            : Object.keys(rejectedFields);
+
+    if (!keys.length) {
+        return "";
+    }
+
+    const tags = keys
+        .map(f =>
+            `<span class="field-tag">${FIELD_LABELS[f] || f}</span>`
+        )
+        .join("");
+
+    return `<div class="rejected-tags">${tags}</div>`;
+}
+
+
+/*
+==========================================
+RINGKASAN (dibangun dari visitorData
+yang sudah dikumpulkan lewat applied_fields)
+==========================================
+*/
+
+function buildSummaryHTML() {
+
+    let statusKartuText = visitorData.status_kartu;
+
+    if (statusKartuText === "dititipkan") {
+        statusKartuText = "Dititipkan";
+    } else if (statusKartuText === "tidak_dititipkan") {
+        statusKartuText = "Tidak dititipkan";
+    }
+
+    const rows = ALL_FIELDS.map(field => {
+
+        const value =
+            field === "status_kartu"
+                ? (statusKartuText || "-")
+                : (visitorData[field] || "-");
+
+        return `
+            <div class="summary-row">
+                <span class="summary-label">${FIELD_LABELS[field]}</span>
+                <span class="summary-value">${value}</span>
+            </div>
+        `;
+
+    }).join("");
+
+    return `
+        <b>Data kunjungan Anda:</b>
+
+        <div class="summary">
+            ${rows}
+        </div>
+
+        <br>
+
+        Apakah semua data sudah benar?
+
+        <div class="confirm-buttons">
+
+            <button
+                class="confirm"
+                onclick="confirmCheckin()">
+
+                Ya, Check-In
+
+            </button>
+
+
+            <button
+                class="repeat"
+                onclick="location.reload()">
+
+                Ulangi
+
+            </button>
+
+        </div>
+    `;
+}
+
+
+/*
+==========================================
+PESAN FINAL (AI sudah commit ke DB sendiri)
+==========================================
+*/
+
+function buildFinalizedHTML(replyText) {
+
+    return `
+        ${replyText}
+
+        <div class="finish-buttons">
+            <button class="finish-home" onclick="window.location.href='/'">
+                Kembali ke Beranda
+            </button>
+        </div>
+    `;
+}
+
+
+/*
+==========================================
+PANGGIL /ask_ai
+==========================================
+*/
+
+async function callAskAI(message) {
+
+    const response = await fetch(
+        "/ask_ai",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                message: message
+            })
+        }
+    );
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch (e) {
+        data = {};
+    }
+
+    if (!response.ok) {
+
+        const error = new Error(
+            data.message ||
+            ("HTTP " + response.status)
+        );
+
+        error.status = response.status;
+        error.errorType = data.error_type || null;
+
+        throw error;
+    }
+
+    return data;
+}
+
+
+/*
+==========================================
+PROSES SATU GILIRAN PERCAKAPAN
+==========================================
+*/
+
+async function processUserMessage(sentText, displayText) {
+
+    if (isFinalized) {
+        return;
+    }
+
+
+    /*
+    ======================================
+    TAMPILKAN PESAN USER
+    ======================================
+    */
+
+    addMessage(
+        displayText !== undefined ? displayText : sentText,
+        "user"
+    );
+
+    conversation.push({
+        role: "user",
+        content: sentText
+    });
+
+    userInput.value = "";
+    userInput.disabled = true;
+    sendButton.disabled = true;
+
+
+    await showTyping();
+
+
+    /*
+    ======================================
+    KIRIM KE /ask_ai
+    ======================================
+    */
+
+    let data;
+
+    try {
+
+        data = await callAskAI(sentText);
+
+    } catch (error) {
+
+        hideTyping();
+
+        console.error(error);
+
+        let errorMessage =
+            "❌ Terjadi kesalahan saat memproses permintaan.";
+
+        if (
+            error &&
+            (
+                error.status === 429 ||
+                error.errorType === "quota"
+            )
+        ) {
+
+            errorMessage =
+                "⚠️ <b>Layanan AI sedang mencapai batas penggunaan.</b><br><br>" +
+                "Flask tetap berjalan normal. Silakan tunggu sampai kuota AI tersedia kembali.";
+
+        } else if (
+            error &&
+            (
+                error.status === 500 ||
+                error.status === 502 ||
+                error.status === 503
+            )
+        ) {
+
+            errorMessage =
+                "❌ Server sedang mengalami masalah.<br><br>" +
+                "Silakan coba lagi beberapa saat.";
+
+        } else if (
+            error &&
+            error.name === "TypeError"
+        ) {
+
+            errorMessage =
+                "❌ Tidak dapat terhubung ke server Flask.<br><br>" +
+                "Pastikan Flask sedang berjalan.";
+        }
+
+        addMessage(
+            errorMessage,
+            "ai"
+        );
+
+        userInput.disabled = false;
+        sendButton.disabled = false;
+        userInput.focus();
+
+        return;
+    }
+
+
+    hideTyping();
+
+
+    const {
+        reply,
+        applied_fields,
+        rejected_fields,
+        completed,
+        finalized,
+        visitor_data
+    } = data;
+
+
+    /*
+    ======================================
+    UPDATE DATA & PROGRESS DARI RESPONS AI
+
+    Sinkronkan visitorData langsung dari
+    visitor_data (state asli di server),
+    bukan hanya dari applied_fields. Ini
+    mencegah tampilan di browser "nyasar"
+    kalau server & client sempat tidak
+    sinkron (mis. reload halaman di tengah
+    sesi).
+    ======================================
+    */
+
+    if (visitor_data) {
+
+        Object.assign(
+            visitorData,
+            visitor_data
+        );
+
+    } else if (applied_fields) {
+
+        Object.assign(
+            visitorData,
+            applied_fields
+        );
+    }
+
+    updateProgress(
+        (finalized || completed)
+            ? TOTAL_LANGKAH
+            : computeStep()
+    );
+
+
+    /*
+    ======================================
+    SUDAH FINAL — AI SUDAH COMMIT KE DB
+    ======================================
+    */
+
+    if (finalized) {
+
+        isFinalized = true;
+
+        addMessage(
+            buildFinalizedHTML(
+                reply || "✅ <b>Check-In Berhasil!</b>"
+            ),
+            "ai"
+        );
+
+        conversation.push({
+            role: "assistant",
+            content: reply || ""
+        });
+
+        return;
+    }
+
+
+    /*
+    ======================================
+    MASIH LANJUT NGOBROL
+    ======================================
+    */
+
+    const bubble =
+        (reply || "") +
+        renderRejectedTags(rejected_fields);
+
+    addMessage(bubble, "ai");
+
+    conversation.push({
+        role: "assistant",
+        content: reply || ""
+    });
+
+
+    /*
+    ======================================
+    SEMUA DATA UTAMA SUDAH TERKUMPUL
+    → TAMPILKAN RINGKASAN LOKAL
+    (belum finalized, masih menunggu
+    konfirmasi user)
+    ======================================
+    */
+
+    if (completed) {
+
+        addMessage(
+            buildSummaryHTML(),
+            "ai"
+        );
+    }
+
+
+    userInput.disabled = false;
+    sendButton.disabled = false;
+    userInput.focus();
+}
+
+
+/*
+==========================================
+KIRIM JAWABAN DARI INPUT TEKS
+==========================================
+*/
+
+async function sendMessage() {
+
+    const value =
+        userInput.value.trim();
+
+    if (!value) {
+        return;
+    }
+
+    await processUserMessage(value);
+}
+
+
+/*
+==========================================
+KONFIRMASI CHECK-IN (tombol pada ringkasan)
+Mengirim pesan konfirmasi biasa ke /ask_ai;
+AI sendiri yang memutuskan untuk finalize
+dan commit ke DB.
+==========================================
+*/
+
+async function confirmCheckin() {
+
+    await processUserMessage(
+        "Ya, saya konfirmasi data sudah benar, silakan check-in.",
+        "✓ Ya, Check-In"
+    );
+}
+
+
+/*
+==========================================
+BUTTON
+==========================================
+*/
+
+if (sendButton) {
+
+    sendButton.addEventListener(
+        "click",
+        sendMessage
+    );
+
+}
+
+
+/*
+==========================================
+ENTER
+==========================================
+*/
+
+if (userInput) {
+
+    userInput.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Enter"
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+}
+
+
+/*
+==========================================
+FOCUS
+==========================================
+*/
+
+if (userInput) {
+
+    userInput.focus();
+
+}
+
+</script>
+
+</body>
+
+</html>

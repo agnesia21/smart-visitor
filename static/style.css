@@ -1,0 +1,1208 @@
+/* =========================================
+   RESET
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
+    background: #f4f7fb;
+    color: #172033;
+    min-height: 100vh;
+}
+
+
+/* =========================================
+   CHAT CONTAINER
+========================================= */
+
+.chat-container {
+    width: 100%;
+    max-width: 900px;
+    height: 92vh;
+    margin: 4vh auto;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+
+    box-shadow:
+        0 20px 60px rgba(23, 32, 51, 0.12);
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.chat-header {
+    background: #172033;
+    color: white;
+    padding: 24px 30px;
+
+    display: flex;
+    align-items: center;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+
+    background: rgba(255,255,255,0.12);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 24px;
+}
+
+.header-title h1 {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.header-title p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #b9c2d1;
+}
+
+
+/* =========================================
+   CHAT AREA
+========================================= */
+
+.chat-area {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fafbfc 0%,
+            #f5f7fa 100%
+        );
+}
+
+
+/* Scrollbar */
+
+.chat-area::-webkit-scrollbar {
+    width: 7px;
+}
+
+.chat-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-area::-webkit-scrollbar-thumb {
+    background: #d5dbe5;
+    border-radius: 10px;
+}
+
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+.message {
+    display: flex;
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.message.ai {
+    justify-content: flex-start;
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+
+/* =========================================
+   CHAT BUBBLE
+========================================= */
+
+.bubble {
+    max-width: 72%;
+    padding: 16px 19px;
+
+    border-radius: 18px;
+
+    font-size: 15px;
+    line-height: 1.65;
+
+    box-shadow:
+        0 4px 15px rgba(23, 32, 51, 0.04);
+}
+
+
+/* AI */
+
+.message.ai .bubble {
+    background: white;
+
+    border: 1px solid #e7ebf1;
+
+    border-bottom-left-radius: 5px;
+
+    color: #172033;
+}
+
+
+/* USER */
+
+.message.user .bubble {
+    background: #172033;
+
+    color: white;
+
+    border-bottom-right-radius: 5px;
+
+    box-shadow:
+        0 5px 15px rgba(23, 32, 51, 0.15);
+}
+
+
+/* =========================================
+   BOLD TEXT
+========================================= */
+
+.bubble b {
+    font-weight: 700;
+}
+
+
+/* =========================================
+   TYPING
+========================================= */
+
+.typing {
+    padding: 0 30px 12px;
+
+    color: #8a94a6;
+
+    font-size: 13px;
+}
+
+.typing span {
+    display: inline-block;
+
+    width: 6px;
+    height: 6px;
+
+    background: #8a94a6;
+
+    border-radius: 50%;
+
+    margin-right: 4px;
+}
+
+
+/* =========================================
+   INPUT AREA
+========================================= */
+
+.input-area {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 18px 25px;
+
+    background: white;
+
+    border-top: 1px solid #e9edf3;
+}
+
+
+/* Input */
+
+.input-area input {
+    flex: 1;
+
+    height: 52px;
+
+    border: 1.5px solid #dce2ea;
+
+    border-radius: 14px;
+
+    padding: 0 17px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 15px;
+
+    color: #172033;
+
+    outline: none;
+
+    background: #fbfcfd;
+
+    transition: 0.2s;
+}
+
+.input-area input::placeholder {
+    color: #9aa4b4;
+}
+
+.input-area input:focus {
+    border-color: #172033;
+
+    background: white;
+
+    box-shadow:
+        0 0 0 3px rgba(23, 32, 51, 0.06);
+}
+
+
+/* =========================================
+   SEND BUTTON
+========================================= */
+
+#sendButton {
+    width: 52px;
+    height: 52px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    background: #172033;
+
+    color: white;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 21px;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.2s;
+}
+
+#sendButton:hover {
+    background: #26334d;
+
+    transform: translateY(-1px);
+}
+
+#sendButton:active {
+    transform: scale(0.96);
+}
+
+
+/* =========================================
+   INPUT HINT
+========================================= */
+
+.input-hint {
+    text-align: center;
+
+    padding: 0 20px 18px;
+
+    font-size: 12px;
+
+    color: #9aa4b4;
+
+    background: white;
+}
+
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+.summary {
+    margin-top: 12px;
+
+    padding: 16px;
+
+    background: #f7f9fc;
+
+    border: 1px solid #e3e8ef;
+
+    border-radius: 14px;
+}
+
+.summary div {
+    padding: 7px 0;
+
+    font-size: 13px;
+
+    border-bottom: 1px solid #e9edf2;
+}
+
+.summary div:last-child {
+    border-bottom: none;
+}
+
+
+/* =========================================
+   CONFIRM BUTTONS
+========================================= */
+
+.confirm-buttons {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+.confirm-buttons button {
+    border: none;
+
+    padding: 11px 16px;
+
+    border-radius: 11px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.confirm {
+    background: #172033;
+    color: white;
+}
+
+.confirm:hover {
+    background: #26334d;
+
+    transform: translateY(-1px);
+}
+
+.repeat {
+    background: #edf0f4;
+
+    color: #172033;
+}
+
+.repeat:hover {
+    background: #e0e4ea;
+}
+
+
+/* ==========================================
+   HOME PAGE
+========================================== */
+
+.kiosk {
+    width: 100%;
+    max-width: 1100px;
+    min-height: 100vh;
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ==========================================
+   HOME HEADER
+========================================== */
+
+.kiosk .header {
+    background: #172033;
+    color: white;
+
+    padding: 28px 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-radius: 0 0 24px 24px;
+}
+
+.kiosk .brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.kiosk .brand-icon {
+    width: 55px;
+    height: 55px;
+
+    background: rgba(255,255,255,0.12);
+
+    border-radius: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+    font-size: 28px;
+}
+
+.kiosk .brand h1 {
+    margin: 0;
+
+    color: white;
+
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.kiosk .brand p {
+    margin: 5px 0 0;
+
+    color: #b9c2d1;
+
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   PETUGAS
+========================================== */
+
+.kiosk .staff-button {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 12px 18px;
+
+    background: #26334d;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 12px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+
+    transition: 0.2s;
+}
+
+.kiosk .staff-button:hover {
+    background: #34435f;
+
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================
+   WELCOME
+========================================== */
+
+.kiosk .welcome {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 70px 30px;
+}
+
+.kiosk .welcome-icon {
+    width: 72px;
+    height: 72px;
+
+    background: white;
+
+    border-radius: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 36px;
+
+    box-shadow:
+        0 10px 30px rgba(23, 32, 51, 0.08);
+
+    margin-bottom: 20px;
+}
+
+.kiosk .small-title {
+    margin: 0;
+
+    color: #8a94a6;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: 3px;
+}
+
+.kiosk .welcome h2 {
+    margin: 10px 0;
+
+    color: #172033;
+
+    font-size: 42px;
+
+    font-weight: 700;
+}
+
+.kiosk .description {
+    margin: 0 0 40px;
+
+    color: #6f7b8f;
+
+    font-size: 17px;
+}
+
+
+/* ==========================================
+   ACTION BUTTONS
+========================================== */
+
+.kiosk .action-container {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 22px;
+
+    width: 100%;
+}
+
+.kiosk .action-card {
+    width: 300px;
+
+    padding: 25px;
+
+    border: 1px solid #e4e8ef;
+
+    border-radius: 20px;
+
+    background: white;
+
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 30px rgba(23, 32, 51, 0.08);
+
+    transition: 0.25s;
+}
+
+.kiosk .action-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 18px 40px rgba(23, 32, 51, 0.13);
+}
+
+.kiosk .action-icon {
+    width: 55px;
+    height: 55px;
+
+    flex-shrink: 0;
+
+    background: #172033;
+
+    color: white;
+
+    border-radius: 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 25px;
+}
+
+.kiosk .action-card h3 {
+    margin: 0 0 5px;
+
+    color: #172033;
+
+    font-size: 18px;
+}
+
+.kiosk .action-card p {
+    margin: 0;
+
+    color: #7d8899;
+
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.kiosk footer {
+    padding: 25px 35px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    color: #8a94a6;
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   PROFESSIONAL TABLE
+========================================= */
+
+.visitor-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+
+/* =========================================
+   TABLE HEADER
+========================================= */
+
+.visitor-table thead th {
+    padding: 16px 18px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    color: #667895;
+
+    text-align: left;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+
+    white-space: nowrap;
+
+    border-bottom: 1px solid #e5eaf1;
+}
+
+
+/* =========================================
+   TABLE BODY
+========================================= */
+
+.visitor-table tbody td {
+    padding: 17px 18px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    color: #536985;
+
+    vertical-align: middle;
+
+    border-bottom: 1px solid #edf0f4;
+}
+
+
+/* Hover Row */
+
+.visitor-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.visitor-table tbody tr:hover {
+    background: #fafcff;
+}
+
+
+/* =========================================
+   VISITOR NAME
+========================================= */
+
+.visitor-table .visitor-name {
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #172033;
+}
+
+
+/* =========================================
+   VISITOR DETAIL
+========================================= */
+
+.visitor-table .visitor-detail {
+    display: block;
+
+    margin-top: 3px;
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+    color: #8493aa;
+}
+
+
+/* =========================================
+   TABLE INFO
+========================================= */
+
+.visitor-table .visitor-info {
+    font-size: 14px;
+
+    font-weight: 500;
+
+    color: #536985;
+}
+
+
+/* =========================================
+   CHECK-IN
+========================================= */
+
+.visitor-table .check-in {
+    font-size: 14px;
+
+    font-weight: 500;
+
+    color: #536985;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
+
+.visitor-table .status {
+    display: inline-flex;
+
+    align-items: center;
+
+    white-space: nowrap;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   CARD STATUS
+========================================= */
+
+.visitor-table .card-status {
+    white-space: nowrap;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   CHECK-OUT BUTTON
+========================================= */
+
+.visitor-table button {
+    font-family: "Plus Jakarta Sans", sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   TABLE RESPONSIVE
+========================================= */
+
+.table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f3f7;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #cdd5e1;
+
+    border-radius: 10px;
+}
+
+
+/* =========================================
+   GLOBAL FORM ELEMENTS
+========================================= */
+
+button,
+input,
+textarea,
+select {
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+
+/* =========================================
+   MOBILE CHAT
+========================================= */
+
+@media (max-width: 700px) {
+
+    .chat-container {
+        width: 100%;
+
+        height: 100vh;
+
+        margin: 0;
+
+        border-radius: 0;
+    }
+
+    .chat-header {
+        padding: 20px;
+    }
+
+    .chat-area {
+        padding: 20px;
+    }
+
+    .bubble {
+        max-width: 88%;
+
+        font-size: 14px;
+    }
+
+    .input-area {
+        padding: 14px;
+    }
+
+    .input-hint {
+        padding-bottom: 14px;
+    }
+
+
+    /* Mobile table */
+
+    .visitor-table thead th {
+        padding: 13px 12px;
+
+        font-size: 11px;
+    }
+
+    .visitor-table tbody td {
+        padding: 14px 12px;
+
+        font-size: 13px;
+    }
+
+    .visitor-table .visitor-name {
+        font-size: 13px;
+    }
+
+    .visitor-table .visitor-detail {
+        font-size: 11px;
+    }
+
+    .visitor-table .visitor-info,
+    .visitor-table .check-in {
+        font-size: 13px;
+    }
+}
+
+
+/* ==========================================
+   MOBILE HOME
+========================================== */
+
+@media (max-width: 700px) {
+
+    .kiosk .header {
+        padding: 22px 20px;
+    }
+
+    .kiosk .brand h1 {
+        font-size: 22px;
+    }
+
+    .kiosk .brand p {
+        font-size: 12px;
+    }
+
+    .kiosk .staff-button {
+        padding: 10px 12px;
+
+        font-size: 12px;
+    }
+
+    .kiosk .welcome {
+        padding: 50px 20px;
+    }
+
+    .kiosk .welcome h2 {
+        font-size: 32px;
+    }
+
+    .kiosk .description {
+        font-size: 15px;
+    }
+
+    .kiosk .action-container {
+        flex-direction: column;
+
+        align-items: center;
+    }
+
+    .kiosk .action-card {
+        width: 100%;
+
+        max-width: 350px;
+    }
+
+    .kiosk footer {
+        flex-direction: column;
+
+        gap: 8px;
+
+        text-align: center;
+    }
+}
+/* ================================
+   PROFILE
+================================ */
+
+.profile-wrapper {
+    position: relative;
+}
+
+.profile-button {
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-family: inherit;
+}
+
+.profile-button:hover {
+    background: #eef2ff;
+}
+
+.staff-avatar,
+.menu-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5b8def, #6c63df);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 17px;
+}
+
+.profile-info {
+    text-align: left;
+    min-width: 120px;
+}
+
+.profile-info strong {
+    display: block;
+    color: #14213d;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.profile-info span {
+    display: block;
+    color: #7c8daa;
+    font-size: 13px;
+    margin-top: 3px;
+}
+
+.profile-arrow {
+    color: #64748b;
+    font-size: 18px;
+    margin-left: 4px;
+}
+
+
+/* ================================
+   PROFILE DROPDOWN
+================================ */
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 260px;
+    background: white;
+    border: 1px solid #e5eaf2;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.14);
+    padding: 10px;
+    z-index: 1000;
+}
+
+.profile-menu.show {
+    display: block;
+}
+
+.profile-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+}
+
+.menu-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 15px;
+}
+
+.profile-menu-header strong {
+    display: block;
+    color: #14213d;
+    font-size: 14px;
+}
+
+.profile-menu-header span {
+    display: block;
+    color: #8a99b2;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.menu-divider {
+    height: 1px;
+    background: #edf0f5;
+    margin: 8px 0;
+}
+
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    color: #334155;
+    text-decoration: none;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.profile-menu-item:hover {
+    background: #f5f7fb;
+}
+
+.logout-item {
+    color: #dc2626;
+}
+
+.logout-item:hover {
+    background: #fff1f2;
+}
+/* =========================================
+   FILTER & EXPORT BUTTON
+   ========================================= */
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+.table-actions button,
+.table-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    padding: 0 20px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.table-actions .filter-btn {
+    background: #ffffff;
+    color: #19345f;
+    border: 1px solid #dbe4f0;
+}
+
+.table-actions .export-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: #12233f;
+    color: #ffffff;
+    border: 1px solid #12233f;
+}

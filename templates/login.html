@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login Petugas - Smart Visitor</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: #14213d;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 430px;
+            padding: 24px;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+
+            border-radius: 18px;
+
+            background: #14213d;
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 30px;
+        }
+
+        .brand h1 {
+            font-size: 27px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand p {
+            margin-top: 7px;
+            color: #71809b;
+            font-size: 14px;
+        }
+
+        .login-card {
+            background: white;
+            border: 1px solid #e3e9f2;
+            border-radius: 22px;
+
+            padding: 34px;
+
+            box-shadow:
+                0 12px 35px rgba(20, 33, 61, 0.08);
+        }
+
+        .login-card h2 {
+            font-size: 23px;
+            margin-bottom: 8px;
+        }
+
+        .login-description {
+            color: #71809b;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 15px;
+
+            border: 1px solid #dce4ef;
+            border-radius: 11px;
+
+            font-size: 15px;
+            outline: none;
+
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #6475e8;
+            box-shadow: 0 0 0 3px rgba(100, 117, 232, 0.12);
+        }
+
+        .login-button {
+            width: 100%;
+            border: none;
+
+            background: #14213d;
+            color: white;
+
+            padding: 14px;
+            border-radius: 11px;
+
+            font-size: 15px;
+            font-weight: 600;
+
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .login-button:hover {
+            background: #1c2d52;
+        }
+
+        .error {
+            background: #fff0f0;
+            border: 1px solid #ffd0d0;
+            color: #d93030;
+
+            padding: 11px 13px;
+            border-radius: 10px;
+
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #91a0b7;
+            font-size: 12px;
+            margin-top: 22px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="login-wrapper">
+
+    <div class="brand">
+
+        <div class="logo">
+            ✦
+        </div>
+
+        <h1>SMART VISITOR</h1>
+
+        <p>AI-Powered Visitor Management</p>
+
+    </div>
+
+
+    <div class="login-card">
+
+        <h2>Login Petugas</h2>
+
+        <p class="login-description">
+            Masuk untuk mengakses dashboard pengelolaan pengunjung.
+        </p>
+
+
+        {% if error %}
+
+        <div class="error">
+            ⚠️ {{ error }}
+        </div>
+
+        {% endif %}
+
+
+        <form method="POST">
+
+            <div class="form-group">
+
+                <label for="username">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Masukkan username"
+                    required
+                    autocomplete="username"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Masukkan password"
+                    required
+                    autocomplete="current-password"
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="login-button"
+            >
+                Masuk ke Dashboard
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="footer">
+        Smart Visitor Management System
+    </div>
+
+</div>
+
+</body>
+</html>

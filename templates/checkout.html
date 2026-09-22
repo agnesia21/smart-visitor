@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Check-Out - Smart Visitor</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            min-height: 100vh;
+            color: #17233c;
+        }
+
+        .header {
+            background: #162238;
+            color: white;
+            padding: 25px 50px;
+            border-radius: 0 0 35px 35px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #b8c7dc;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 850px;
+            margin: 60px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(20, 40, 70, 0.08);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title .icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            border-radius: 20px;
+            background: #162238;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .title h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .title p {
+            color: #7890ad;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 18px;
+            border: 1px solid #dbe3ef;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #6178e8;
+        }
+
+        .search-button {
+            width: 100%;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            background: #162238;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background: #223451;
+        }
+
+        .result {
+            display: none;
+            margin-top: 30px;
+            border-top: 1px solid #e4eaf2;
+            padding-top: 30px;
+        }
+
+        .result h3 {
+            margin-bottom: 20px;
+        }
+
+        .info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .info-item {
+            background: #f7f9fc;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .info-item small {
+            display: block;
+            color: #7890ad;
+            margin-bottom: 5px;
+        }
+
+        .info-item strong {
+            font-size: 16px;
+        }
+
+        .checkout-button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: #16a36d;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .checkout-button:hover {
+            background: #128657;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .error {
+            background: #ffe8e8;
+            color: #c62828;
+        }
+
+        .success {
+            background: #e5f8ef;
+            color: #087443;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #60799c;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 94%;
+                margin: 30px auto;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            .info {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>SMART VISITOR</h1>
+        <p>Visitor Management System</p>
+    </div>
+
+    <div class="container">
+
+        <div class="card">
+
+            <div class="title">
+                <div class="icon">←</div>
+
+                <h2>Check-Out Pengunjung</h2>
+
+                <p>
+                    Masukkan nomor identitas untuk menyelesaikan kunjungan.
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="nomor_identitas">
+                    Nomor Identitas
+                </label>
+
+                <input
+                    type="text"
+                    id="nomor_identitas"
+                    placeholder="Masukkan nomor KTP / SIM / NIM"
+                >
+            </div>
+
+            <button
+                type="button"
+                class="search-button"
+                onclick="cariPengunjung()"
+            >
+                Cari Pengunjung
+            </button>
+
+            <div id="message" class="message"></div>
+
+            <div id="result" class="result">
+
+                <h3>Data Pengunjung</h3>
+
+                <div class="info">
+
+                    <div class="info-item">
+                        <small>Nama</small>
+                        <strong id="nama"></strong>
+                    </div>
+
+                    <div class="info-item">
+                        <small>Nomor Identitas</small>
+                        <strong id="identitas"></strong>
+                    </div>
+
+                    <div class="info-item">
+                        <small>Instansi</small>
+                        <strong id="instansi"></strong>
+                    </div>
+
+                    <div class="info-item">
+                        <small>Bertemu Dengan</small>
+                        <strong id="bertemu"></strong>
+                    </div>
+
+                    <div class="info-item">
+                        <small>Keperluan</small>
+                        <strong id="keperluan"></strong>
+                    </div>
+
+                    <div class="info-item">
+                        <small>Check-In</small>
+                        <strong id="check_in"></strong>
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="checkout-button"
+                    onclick="prosesCheckout()"
+                >
+                    ✓ Selesaikan Kunjungan
+                </button>
+
+            </div>
+
+            <a href="/" class="back">
+                ← Kembali ke halaman utama
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        let visitorId = null;
+
+
+        function tampilkanPesan(message, type) {
+
+            const box = document.getElementById("message");
+
+            box.textContent = message;
+
+            box.className = "message " + type;
+
+            box.style.display = "block";
+        }
+
+
+        async function cariPengunjung() {
+
+            const nomor = document
+                .getElementById("nomor_identitas")
+                .value
+                .trim();
+
+            if (!nomor) {
+
+                tampilkanPesan(
+                    "Silakan masukkan nomor identitas.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            try {
+
+                const response = await fetch(
+                    "/api/visitor/" + encodeURIComponent(nomor)
+                );
+
+                const result = await response.json();
+
+
+                if (!result.success) {
+
+                    document.getElementById("result").style.display = "none";
+
+                    tampilkanPesan(
+                        result.message,
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                const visitor = result.visitor;
+
+                visitorId = visitor.id;
+
+
+                document.getElementById("nama").textContent =
+                    visitor.nama || "-";
+
+                document.getElementById("identitas").textContent =
+                    visitor.nomor_identitas || "-";
+
+                document.getElementById("instansi").textContent =
+                    visitor.instansi || "-";
+
+                document.getElementById("bertemu").textContent =
+                    visitor.bertemu_dengan || "-";
+
+                document.getElementById("keperluan").textContent =
+                    visitor.keperluan || "-";
+
+                document.getElementById("check_in").textContent =
+                    visitor.check_in || "-";
+
+
+                document.getElementById("result").style.display =
+                    "block";
+
+                document.getElementById("message").style.display =
+                    "none";
+
+            } catch (error) {
+
+                console.error(error);
+
+                tampilkanPesan(
+                    "Terjadi kesalahan saat mencari pengunjung.",
+                    "error"
+                );
+            }
+        }
+
+
+        async function prosesCheckout() {
+
+            if (!visitorId) {
+
+                tampilkanPesan(
+                    "Silakan cari pengunjung terlebih dahulu.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            const nama =
+                document.getElementById("nama").textContent;
+
+
+            const yakin = confirm(
+                "Apakah Anda yakin ingin menyelesaikan kunjungan " +
+                nama +
+                "?"
+            );
+
+
+            if (!yakin) {
+                return;
+            }
+
+
+            try {
+
+                const response = await fetch(
+                    "/checkout/" + visitorId,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    }
+                );
+
+
+                const result = await response.json();
+
+
+                if (result.success) {
+
+                    tampilkanPesan(
+                        "✓ Check-Out berhasil untuk " + nama + ".",
+                        "success"
+                    );
+
+                    document.getElementById("result").style.display =
+                        "none";
+
+                    document.getElementById("nomor_identitas").value =
+                        "";
+
+                    visitorId = null;
+
+                } else {
+
+                    tampilkanPesan(
+                        result.message,
+                        "error"
+                    );
+                }
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                tampilkanPesan(
+                    "Terjadi kesalahan saat melakukan check-out.",
+                    "error"
+                );
+            }
+        }
+
+    </script>
+
+</body>
+</html>

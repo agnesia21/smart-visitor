@@ -1,0 +1,3090 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Smart Visitor — Dashboard Petugas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --line: #e8eef6;
+    --muted: #8a9ab0;
+    --navy: #14213d;
+    --green: #15875a;
+    --red: #c83942;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #f6f8fb;
+    color: #1a2b44;
+}
+
+.icon {
+    width: 17px;
+    height: 17px;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.notification {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: white;
+
+    border: 1px solid var(--line);
+
+    color: #172033;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    font-size: 17px;
+
+    transition: 0.2s ease;
+}
+
+.notification:hover {
+    background: #f5f7fb;
+    transform: translateY(-1px);
+}
+
+.notification {
+    position: relative;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+
+    min-width: 20px;
+    height: 20px;
+
+    padding: 0 5px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ef4444;
+    color: white;
+
+    border-radius: 50%;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    border: 2px solid white;
+}
+
+.notification.has-notification {
+    animation: notificationShake 0.5s ease-in-out;
+}
+
+@keyframes notificationShake {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-12deg);
+    }
+
+    50% {
+        transform: rotate(12deg);
+    }
+
+    75% {
+        transform: rotate(-8deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    width: 245px;
+    background: linear-gradient(180deg, #0c1e38, #122b4b);
+    color: white;
+
+    position: fixed;
+    inset: 0 auto 0 0;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 24px 16px;
+
+    z-index: 20;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 6px 10px 28px;
+}
+
+.brand-logo {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 13px;
+
+    display: grid;
+    place-items: center;
+
+    background: linear-gradient(
+        135deg,
+        #5d9cf0,
+        #7467e8
+    );
+
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.brand-name {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: .4px;
+}
+
+.brand-sub {
+    color: #9db1cb;
+    font-size: 9px;
+
+    margin-top: 2px;
+
+    letter-spacing: .3px;
+}
+
+.nav-title {
+    color: #7188a7;
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 1.1px;
+
+    padding: 0 12px 9px;
+
+    text-transform: uppercase;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #b9c8dc;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 11px 12px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+    transition: .2s;
+}
+
+.nav a:hover {
+    background: #ffffff12;
+    color: white;
+}
+
+.nav a.active {
+    background: #24518a;
+    color: white;
+
+    box-shadow: inset 3px 0 #73a9ef;
+}
+
+.nav-icon {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+
+    background: #ffffff0e;
+
+    border: 1px solid #ffffff12;
+
+    border-radius: 14px;
+
+    padding: 15px;
+}
+
+.sidebar-bottom .mini-label {
+    color: #7690b1;
+
+    font-size: 9px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .9px;
+
+    margin-bottom: 5px;
+}
+
+.sidebar-bottom strong {
+    font-size: 13px;
+    display: block;
+}
+
+.sidebar-bottom p {
+    color: #91a7c3;
+
+    font-size: 10px;
+
+    line-height: 1.5;
+
+    margin-top: 4px;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main {
+    margin-left: 245px;
+
+    width: calc(100% - 245px);
+
+    padding: 25px 34px 40px;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+
+.topbar {
+    height: 54px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 24px;
+}
+
+.eyebrow {
+    font-size: 11px;
+    color: var(--muted);
+
+    margin-bottom: 3px;
+    letter-spacing: .4px;
+}
+
+.topbar-left h1 {
+    font-size: 22px;
+
+    letter-spacing: -.4px;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+.online {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    background: white;
+
+    border: 1px solid var(--line);
+
+    border-radius: 999px;
+
+    padding: 8px 12px;
+
+    color: #5d708d;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.online-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #20b56e;
+
+    box-shadow:
+        0 0 0 4px #e6f8ee;
+}
+
+.notification {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 10px;
+
+    background: white;
+
+    border: 1px solid var(--line);
+
+    cursor: pointer;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+
+    color: white;
+
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            135deg,
+            #5c91df,
+            #7669e7
+        );
+
+    width: 35px;
+    height: 35px;
+
+    border-radius: 50%;
+
+    font-size: 12px;
+}
+
+.profile-text strong {
+    display: block;
+    font-size: 11px;
+}
+
+.profile-text span {
+    color: var(--muted);
+    font-size: 9px;
+}
+
+/* =========================
+   WELCOME
+========================= */
+
+.welcome {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.welcome h2 {
+    font-size: 22px;
+
+    letter-spacing: -.4px;
+
+    margin-bottom: 4px;
+}
+
+.welcome p {
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.date-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #7386a0;
+
+    font-size: 10px;
+
+    text-align: right;
+
+    flex-shrink: 0;
+}
+
+.date-box .icon {
+    width: 13px;
+    height: 13px;
+}
+
+/* =========================
+   STATISTICS
+========================= */
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+
+    margin-bottom: 18px;
+}
+
+.stat-card {
+    background: white;
+
+    border: 1px solid #e8eef6;
+
+    border-radius: 15px;
+
+    padding: 17px;
+
+    min-height: 125px;
+
+    box-shadow:
+        0 7px 22px #1a33520a;
+
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px #1a335214;
+}
+
+.stat-head {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+.stat-title {
+    color: #71849f;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: .35px;
+}
+
+.stat-icon {
+    width: 35px;
+    height: 35px;
+
+    border-radius: 10px;
+
+    display: grid;
+    place-items: center;
+
+    font-size: 16px;
+}
+
+.stat-icon .icon {
+    width: 18px;
+    height: 18px;
+}
+
+.icon-blue {
+    background: #eaf3ff;
+    color: #3b7cd6;
+}
+
+.icon-green {
+    background: #e7f8f0;
+    color: #15875a;
+}
+
+.icon-orange {
+    background: #fff3dd;
+    color: #b3760a;
+}
+
+.icon-purple {
+    background: #eeeaff;
+    color: #6c63df;
+}
+
+.stat-number {
+    font-size: 28px;
+
+    font-weight: 800;
+
+    margin-top: 13px;
+
+    letter-spacing: -1px;
+}
+
+.stat-caption {
+    color: #8a9ab0;
+
+    font-size: 10px;
+
+    margin-top: 2px;
+}
+
+/* =========================
+   AI INSIGHT
+========================= */
+
+.ai-card {
+    background:
+        linear-gradient(
+            105deg,
+            #edf4ff,
+            #f5f1ff
+        );
+
+    border: 1px solid #d7e2ff;
+
+    border-radius: 15px;
+
+    min-height: 105px;
+
+    padding: 16px 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 18px;
+}
+
+.ai-avatar {
+    width: 54px;
+    height: 54px;
+
+    flex: 0 0 54px;
+
+    border-radius: 15px;
+
+    display: grid;
+    place-items: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #637df0,
+            #806ae6
+        );
+
+    color: white;
+
+    font-size: 25px;
+}
+
+.ai-avatar .icon {
+    width: 24px;
+    height: 24px;
+}
+
+.ai-content h3 {
+    font-size: 13px;
+
+    margin-bottom: 4px;
+}
+
+.ai-content p {
+    color: #627794;
+
+    font-size: 11px;
+
+    line-height: 1.55;
+}
+
+.ai-content b {
+    color: var(--red);
+}
+
+/* =========================
+   TABLE SECTION
+========================= */
+
+.visitor-section {
+    background: white;
+
+    border: 1px solid #e8eef6;
+
+    border-radius: 16px;
+
+    padding: 20px;
+
+    box-shadow:
+        0 7px 22px #1a33520a;
+}
+
+.section-head {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 15px;
+}
+
+.section-title h2 {
+    font-size: 16px;
+}
+
+.section-title p {
+    color: var(--muted);
+
+    font-size: 10px;
+
+    margin-top: 3px;
+}
+
+.tools {
+    display: flex;
+
+    gap: 7px;
+
+    align-items: center;
+}
+
+.search-box {
+    width: 220px;
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 0 10px;
+
+    border: 1px solid var(--line);
+
+    border-radius: 9px;
+
+    background: #fbfcfe;
+}
+
+.search-box .icon {
+    width: 14px;
+    height: 14px;
+    color: #9aa9bb;
+}
+
+.search-box input {
+    width: 100%;
+
+    border: 0;
+
+    outline: 0;
+
+    background: transparent;
+
+    font-size: 11px;
+}
+
+.tool-button {
+    height: 34px;
+
+    border: 1px solid var(--line);
+
+    background: white;
+
+    color: #60738e;
+
+    border-radius: 9px;
+
+    padding: 0 11px;
+
+    cursor: pointer;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    transition: .15s ease;
+}
+
+.tool-button:hover {
+    background: #f5f7fb;
+}
+
+.export-button {
+    background: var(--navy);
+
+    color: white;
+
+    border-color: var(--navy);
+}
+
+.export-button:hover {
+    background: #1c2c50;
+}
+
+/* =========================
+   DATE GROUP
+========================= */
+
+.date-group-row td {
+    padding: 0;
+    border-bottom: none;
+}
+
+.date-group-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    width: 100%;
+
+    padding: 10px 12px;
+    margin-top: 6px;
+
+    background: #f3f6fb;
+    border: 1px solid #e8eef6;
+    border-radius: 9px;
+
+    color: #46587a;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .3px;
+
+    cursor: pointer;
+    text-align: left;
+
+    transition: .15s ease;
+}
+
+.date-group-toggle .icon {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: #7c8daa;
+}
+
+.date-group-toggle:hover {
+    background: #eaf0fa;
+}
+
+.date-group-toggle.active {
+    background: #e6ecff;
+    border-color: #b9c6f5;
+    color: #2f4ea8;
+}
+
+.date-group-toggle.active .icon {
+    color: #4c6bd8;
+}
+
+.date-group-count {
+    margin-left: auto;
+
+    color: #8a9ab0;
+    font-weight: 700;
+    font-size: 9px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.date-group-toggle.active .date-group-count {
+    color: #4c6bd8;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+
+    min-width: 850px;
+
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+
+    color: #8a9bb2;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: .45px;
+
+    padding: 10px 12px;
+
+    border-bottom: 1px solid var(--line);
+
+    white-space: nowrap;
+}
+
+td {
+    padding: 12px;
+
+    border-bottom:
+        1px solid #edf1f6;
+
+    font-size: 11px;
+
+    vertical-align: middle;
+}
+
+tr.visitor-row {
+    transition: background .12s ease;
+}
+
+tr.visitor-row:hover {
+    background: #fafbfe;
+}
+
+/* visitor */
+
+.visitor-cell {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+}
+
+.visitor-avatar {
+    width: 31px;
+    height: 31px;
+
+    border-radius: 50%;
+
+    flex: 0 0 31px;
+
+    display: grid;
+
+    place-items: center;
+
+    color: white;
+
+    font-weight: 800;
+
+    font-size: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #5c91df,
+            #7669e7
+        );
+}
+
+.visitor-name {
+    font-weight: 800;
+
+    color: #1a2b44;
+
+    font-size: 11px;
+}
+
+.visitor-sub {
+    color: #8a9ab0;
+
+    font-size: 9px;
+
+    margin-top: 2px;
+}
+
+.muted {
+    color: #71849e;
+}
+
+/* =========================
+   BADGES
+========================= */
+
+.badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    border-radius: 999px;
+
+    padding: 5px 8px;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+.badge .icon {
+    width: 11px;
+    height: 11px;
+}
+
+.badge-green {
+    color: #15875a;
+
+    background: #e7f8f0;
+}
+
+.badge-orange {
+    color: #ad6d09;
+
+    background: #fff3dd;
+}
+
+.badge-red {
+    color: #c83942;
+
+    background: #ffe9ea;
+}
+
+.badge-gray {
+    color: #687c96;
+
+    background: #eef2f7;
+}
+
+/* =========================
+   CHECKOUT
+========================= */
+
+.checkout-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    border: 0;
+
+    background: var(--navy);
+
+    color: white;
+
+    padding: 8px 10px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
+    transition: background .15s ease;
+}
+
+.checkout-button .icon {
+    width: 11px;
+    height: 11px;
+}
+
+.checkout-button:hover {
+    background: #24446f;
+}
+
+.checkout-button:disabled {
+    opacity: .55;
+
+    cursor: not-allowed;
+}
+
+.checkout-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    color: var(--green);
+
+    font-size: 9px;
+
+    font-weight: 800;
+}
+
+.checkout-done .icon {
+    width: 11px;
+    height: 11px;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.table-footer {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding-top: 13px;
+
+    color: #8a9ab0;
+
+    font-size: 9px;
+}
+
+.empty {
+    text-align: center;
+
+    padding: 45px 10px;
+
+    color: #8a9ab0;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:1200px) {
+
+    .stats {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}
+
+@media(max-width:850px) {
+
+    .sidebar {
+        width: 74px;
+
+        padding: 18px 10px;
+    }
+
+    .brand {
+        justify-content: center;
+
+        padding:
+            5px 0 24px;
+    }
+
+    .brand-copy,
+    .nav-title,
+    .nav a span:not(.nav-icon),
+    .sidebar-bottom {
+        display: none;
+    }
+
+    .nav a {
+        justify-content: center;
+
+        padding: 12px 8px;
+    }
+
+    .main {
+        margin-left: 74px;
+
+        width:
+            calc(100% - 74px);
+
+        padding: 20px;
+    }
+}
+
+@media(max-width:650px) {
+
+    .main {
+        padding: 15px;
+    }
+
+    .online,
+    .notification,
+    .profile-text {
+        display: none;
+    }
+
+    .welcome {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .welcome h2 {
+        font-size: 20px;
+    }
+
+    .date-box {
+        display: none;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .section-head {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .tools {
+        width: 100%;
+    }
+
+    .search-box {
+        flex: 1;
+
+        width: auto;
+    }
+
+}
+
+/* ================================
+   PERINGATAN KUNJUNGAN
+   ================================ */
+
+.visitor-alert {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+
+    width: 430px;
+
+    display: none;
+    align-items: center;
+    gap: 15px;
+
+    padding: 18px 20px;
+
+    background: #fff7e6;
+    border: 1px solid #f5c46b;
+    border-left: 5px solid #f59e0b;
+
+    border-radius: 14px;
+
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+
+    z-index: 9999;
+
+    animation: alertSlideIn 0.35s ease;
+}
+
+.visitor-alert.show {
+    display: flex;
+}
+
+.visitor-alert-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    color: #f59e0b;
+}
+
+.visitor-alert-icon .icon {
+    width: 26px;
+    height: 26px;
+}
+
+.visitor-alert-content {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.visitor-alert-content strong {
+    font-size: 15px;
+    color: #92400e;
+}
+
+.visitor-alert-content span {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #78350f;
+}
+
+.visitor-alert-button {
+    padding: 8px 12px;
+
+    background: #f59e0b;
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.visitor-alert-close {
+    border: none;
+    background: transparent;
+
+    font-size: 22px;
+    color: #92400e;
+
+    cursor: pointer;
+}
+
+@keyframes alertSlideIn {
+
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ==============================
+   PROFILE PETUGAS
+================================ */
+
+.profile-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-button {
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s ease;
+}
+
+.profile-button:hover {
+    background: #eef2ff;
+}
+
+.staff-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5b8def, #6c63df);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.profile-info {
+    text-align: left;
+}
+
+.profile-info strong {
+    display: block;
+    color: #14213d;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.profile-info span {
+    display: block;
+    color: #7c8daa;
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+.profile-arrow {
+    color: #64748b;
+    font-size: 16px;
+    margin-left: 3px;
+    display: inline-flex;
+}
+
+.profile-arrow .icon {
+    width: 14px;
+    height: 14px;
+}
+
+
+/* ==============================
+   DROPDOWN
+================================ */
+
+.profile-menu {
+    display: none !important;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 240px;
+    background: #ffffff;
+    border: 1px solid #e5eaf2;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.15);
+    padding: 10px;
+    z-index: 9999;
+}
+
+.profile-menu.show {
+    display: block !important;
+}
+
+.profile-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+}
+
+.menu-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5b8def, #6c63df);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.profile-menu-header strong {
+    display: block;
+    color: #14213d;
+    font-size: 13px;
+}
+
+.profile-menu-header span {
+    display: block;
+    color: #8a99b2;
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+.menu-divider {
+    height: 1px;
+    background: #edf0f5;
+    margin: 8px 0;
+}
+
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 11px;
+    border-radius: 10px;
+    color: #334155;
+    text-decoration: none;
+    font-size: 13px;
+    transition: 0.15s ease;
+}
+
+.profile-menu-item:hover {
+    background: #f5f7fb;
+}
+
+.menu-icon {
+    display: inline-flex;
+    color: #64748b;
+}
+
+.menu-icon .icon {
+    width: 16px;
+    height: 16px;
+}
+
+.logout-item {
+    color: #dc2626;
+}
+
+.logout-item .menu-icon {
+    color: #dc2626;
+}
+
+.logout-item:hover {
+    background: #fff1f2;
+}
+</style>
+</head>
+
+<body>
+<div id="visitorAlert" class="visitor-alert">
+    <div class="visitor-alert-icon">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+
+    <div class="visitor-alert-content">
+        <strong>Peringatan Kunjungan</strong>
+
+        <span id="visitorAlertMessage">
+            Ada pengunjung yang perlu diperiksa.
+        </span>
+    </div>
+
+    <a
+        href="{{ url_for('staff') }}#daftar-pengunjung"
+        class="visitor-alert-button"
+    >
+        Lihat Pengunjung
+    </a>
+
+    <button
+        type="button"
+        class="visitor-alert-close"
+        onclick="closeVisitorAlert()"
+    >
+        ×
+    </button>
+</div>
+<div class="app">
+
+<!-- =========================
+     SIDEBAR
+========================= -->
+
+<aside class="sidebar">
+
+    <div class="brand">
+
+        <div class="brand-logo">
+            ✦
+        </div>
+
+        <div class="brand-copy">
+
+            <div class="brand-name">
+                SMART VISITOR
+            </div>
+
+            <div class="brand-sub">
+                AI-POWERED VISITOR MANAGEMENT
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="nav-title">
+        Menu Utama
+    </div>
+
+
+    <nav class="nav">
+
+        <a href="/staff" class="active">
+
+            <span class="nav-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+            </span>
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        <a href="#daftar-pengunjung">
+
+            <span class="nav-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+
+            <span>
+                Daftar Pengunjung
+            </span>
+
+        </a>
+
+
+        <a href="/">
+
+            <span class="nav-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </span>
+
+            <span>
+                Check-in Manual
+            </span>
+
+        </a>
+
+
+        <a href="{{ url_for('staff_laporan') }}">
+            <span class="nav-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+            </span>
+            <span>Laporan</span>
+        </a>
+
+    </nav>
+
+
+    <div class="sidebar-bottom">
+
+        <div class="mini-label">
+            Smart Workplace
+        </div>
+
+        <strong>
+            Visitor Management
+        </strong>
+
+        <p>
+            Sistem pengelolaan kunjungan
+            untuk membantu petugas
+            memantau aktivitas pengunjung.
+        </p>
+
+    </div>
+
+</aside>
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<main class="main">
+
+
+<!-- TOPBAR -->
+
+<header class="topbar">
+
+    <div class="topbar-left">
+
+        <div class="eyebrow">
+            SMART VISITOR / DASHBOARD
+        </div>
+
+        <h1>
+            Dashboard Petugas
+        </h1>
+
+    </div>
+
+
+    <div class="topbar-right">
+
+        <div class="online">
+
+            <span class="online-dot"></span>
+
+            System Online
+
+        </div>
+
+
+        <a
+            href="{{ url_for('staff_notifications') }}"
+            class="notification"
+            id="notificationBell"
+            title="Notifikasi"
+        >
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span
+                class="notification-badge"
+                id="notificationBadge"
+                style="display: none;"
+            >
+                0
+            </span>
+        </a>
+
+
+        <div class="profile-wrapper">
+
+            <button class="profile-button" onclick="toggleProfileMenu()">
+
+                <div class="staff-avatar">
+                    {{ staff_nama[0]|upper if staff_nama else 'A' }}
+                </div>
+
+                <div class="profile-info">
+                    <strong>{{ staff_nama or 'Admin Petugas' }}</strong>
+                    <span>Petugas</span>
+                </div>
+
+                <span class="profile-arrow">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+
+            </button>
+
+
+            <div class="profile-menu" id="profileMenu">
+
+                <!-- HEADER PETUGAS -->
+                <div class="profile-menu-header">
+                    <div class="menu-avatar">
+                        {{ staff_nama[0]|upper if staff_nama else 'A' }}
+                    </div>
+
+                    <div class="menu-user-info">
+                        <strong>{{ staff_nama or 'Admin Petugas' }}</strong>
+                        <span>{{ staff_username or 'admin' }}</span>
+                    </div>
+                </div>
+
+                <div class="menu-divider"></div>
+
+                <!-- PROFIL -->
+                <a href="{{ url_for('staff_profile') }}" class="profile-menu-item">
+                    <span class="menu-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                    <span>Profil Saya</span>
+                </a>
+
+                <!-- NOTIFIKASI -->
+                <a href="{{ url_for('staff_notifications') }}" class="profile-menu-item">
+                    <span class="menu-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+                    <span>Notifikasi</span>
+                </a>
+
+                <div class="menu-divider"></div>
+
+                <!-- LOGOUT -->
+                <a href="{{ url_for('logout') }}" class="profile-menu-item logout-item">
+                    <span class="menu-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+                    <span>Logout</span>
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- WELCOME -->
+
+<section class="welcome">
+
+    <div>
+
+        <h2>
+            Selamat datang, {{ staff_nama or 'Petugas' }}
+        </h2>
+
+        <p>
+            Monitor aktivitas pengunjung dan
+            status kartu identitas secara real-time.
+        </p>
+
+    </div>
+
+
+    <div class="date-box">
+
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+
+        <span>
+            Waktu sistem
+            <br>
+            <strong id="currentDate">
+                Memuat...
+            </strong>
+        </span>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     STATISTICS
+========================= -->
+
+<section class="stats">
+
+
+    <!-- ACTIVE -->
+
+    <div class="stat-card">
+
+        <div class="stat-head">
+
+            <span class="stat-title">
+                Pengunjung Aktif
+            </span>
+
+            <div class="stat-icon icon-blue">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+
+        </div>
+
+        <div class="stat-number">
+            {{ sedang_di_kantor }}
+        </div>
+
+        <div class="stat-caption">
+            Sedang berada di kantor
+        </div>
+
+    </div>
+
+
+    <!-- CARD -->
+
+    <div class="stat-card">
+
+        <div class="stat-head">
+
+            <span class="stat-title">
+                Kartu Dititipkan
+            </span>
+
+            <div class="stat-icon icon-green">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+            </div>
+
+        </div>
+
+        <div class="stat-number">
+            {{ kartu_dititipkan }}
+        </div>
+
+        <div class="stat-caption">
+            Masih tercatat dititipkan
+        </div>
+
+    </div>
+
+
+    <!-- WARNING -->
+
+    <div class="stat-card">
+
+        <div class="stat-head">
+
+            <span class="stat-title">
+                Perlu Perhatian
+            </span>
+
+            <div class="stat-icon icon-orange">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+
+        </div>
+
+        <div class="stat-number">
+            {{ perlu_diperhatikan }}
+        </div>
+
+        <div class="stat-caption">
+            Pengunjung lebih dari 8 jam
+        </div>
+
+    </div>
+
+
+    <!-- TOTAL -->
+
+    <div class="stat-card">
+
+        <div class="stat-head">
+
+            <span class="stat-title">
+                Total Pengunjung
+            </span>
+
+            <div class="stat-icon icon-purple">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+
+        </div>
+
+        <div class="stat-number">
+            {{ visitors|length }}
+        </div>
+
+        <div class="stat-caption">
+            Total data kunjungan
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     AI INSIGHT
+========================= -->
+
+{% if perlu_diperhatikan > 0 %}
+
+<section class="ai-card">
+
+    <div class="ai-avatar">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 6.2L20 10l-6.4 1.8L12 18l-1.6-6.2L4 10l6.4-1.8z"/></svg>
+    </div>
+
+    <div class="ai-content">
+
+        <h3>
+            Smart Visitor AI Insight
+        </h3>
+
+        <p>
+
+            AI mendeteksi
+
+            <b>
+                {{ perlu_diperhatikan }} pengunjung
+            </b>
+
+            yang sudah berada di kantor lebih dari
+
+            <b>
+                8 jam
+            </b>
+
+            dan belum melakukan check-out.
+
+            Silakan periksa daftar pengunjung di bawah.
+
+        </p>
+
+    </div>
+
+</section>
+
+{% else %}
+
+<section class="ai-card">
+
+    <div class="ai-avatar">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 6.2L20 10l-6.4 1.8L12 18l-1.6-6.2L4 10l6.4-1.8z"/></svg>
+    </div>
+
+    <div class="ai-content">
+
+        <h3>
+            Smart Visitor AI Insight
+        </h3>
+
+        <p>
+            Tidak ada pengunjung yang memerlukan
+            perhatian khusus saat ini.
+            Semua aktivitas kunjungan berada
+            dalam kondisi normal.
+        </p>
+
+    </div>
+
+</section>
+
+{% endif %}
+
+
+<!-- =========================
+     VISITOR TABLE
+========================= -->
+
+<section
+    class="visitor-section"
+    id="daftar-pengunjung"
+>
+
+
+<div class="section-head">
+
+
+    <div class="section-title">
+        <h2>
+            Daftar Pengunjung
+        </h2>
+        <p>
+            Aktivitas kunjungan terbaru
+            yang tercatat dalam sistem
+        </p>
+    </div>
+
+
+    <div class="tools">
+
+
+        <!-- SEARCH -->
+
+        <div class="search-box">
+
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Cari nama, instansi, atau keperluan..."
+                autocomplete="off"
+            >
+
+        </div>
+
+
+        <!-- FILTER -->
+
+        <button
+            type="button"
+            class="tool-button"
+            id="filterButton"
+            onclick="filterActive()"
+        >
+            Filter
+        </button>
+
+
+        <!-- EXPORT -->
+
+        <button
+            type="button"
+            class="tool-button export-button"
+            onclick="exportTable()"
+        >
+            Export
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="table-wrap">
+
+
+<table id="visitorTable">
+
+
+<thead>
+
+<tr>
+
+    <th>
+        PENGUNJUNG
+    </th>
+
+    <th>
+        BERTEMU DENGAN
+    </th>
+
+    <th>
+        KEPERLUAN
+    </th>
+
+    <th>
+        CHECK-IN
+    </th>
+
+    <th>
+        STATUS
+    </th>
+
+    <th>
+        KARTU
+    </th>
+
+    <th>
+        AKSI
+    </th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+
+{% for tanggal_key, day_visitors in visitors|groupby('tanggal_key')|reverse %}
+
+<tr class="date-group-row" data-date="{{ tanggal_key }}">
+    <td colspan="7">
+        <button type="button" class="date-group-toggle" data-date="{{ tanggal_key }}">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            {{ day_visitors[0].tanggal_label }}
+            <span class="date-group-count">{{ day_visitors|length }} kunjungan</span>
+        </button>
+    </td>
+</tr>
+
+{% for visitor in day_visitors %}
+
+
+<tr
+    class="visitor-row"
+    data-active="{{ 'yes' if visitor.status == 'checked_in' else 'no' }}"
+    data-date="{{ tanggal_key }}"
+>
+
+
+<!-- VISITOR -->
+
+<td>
+
+    <div class="visitor-cell">
+
+
+        <div class="visitor-avatar">
+
+            {{ visitor.nama[:1]|upper }}
+
+        </div>
+
+
+        <div>
+
+            <div class="visitor-name">
+
+                {{ visitor.nama }}
+
+            </div>
+
+
+            <div class="visitor-sub">
+
+                {{ visitor.jenis_identitas }}
+
+                •
+
+                {{ visitor.nomor_identitas }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</td>
+
+
+<!-- BERTEMU -->
+
+<td class="muted">
+
+    {{ visitor.bertemu_dengan or '-' }}
+
+</td>
+
+
+<!-- KEPERLUAN -->
+
+<td class="muted">
+
+    {{ visitor.keperluan or '-' }}
+
+</td>
+
+
+<!-- CHECK IN -->
+
+<td class="muted">
+
+{% if visitor.check_in %}
+
+    {{ visitor.check_in.strftime(
+        '%d/%m/%Y %H:%M'
+    ) }}
+
+{% else %}
+
+    -
+
+{% endif %}
+
+</td>
+
+
+<!-- STATUS -->
+
+<td>
+
+{% if visitor.status == 'checked_in' %}
+
+
+    {% if visitor.peringatan_lama %}
+
+        <span class="badge badge-red">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            &gt; 8 Jam
+        </span>
+
+    {% else %}
+
+        <span class="badge badge-green">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Berada di kantor
+        </span>
+
+    {% endif %}
+
+
+{% else %}
+
+    <span class="badge badge-gray">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Sudah keluar
+    </span>
+
+{% endif %}
+
+</td>
+
+
+<!-- KARTU -->
+
+<td>
+
+{% if visitor.status_kartu == 'dititipkan' %}
+
+    <span class="badge badge-orange">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        Dititipkan
+    </span>
+
+{% else %}
+
+    <span class="badge badge-green">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Dikembalikan
+    </span>
+
+{% endif %}
+
+</td>
+
+
+<!-- ACTION -->
+
+<td>
+
+
+{% if visitor.status == 'checked_in' %}
+
+
+    <button
+        type="button"
+        class="checkout-button"
+        data-id="{{ visitor.id }}"
+        data-nama="{{ visitor.nama|e }}"
+    >
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Check-Out
+    </button>
+
+
+{% else %}
+
+
+    <span class="checkout-done">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Selesai
+    </span>
+
+
+{% endif %}
+
+
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+
+{% else %}
+
+
+<tr>
+
+    <td
+        colspan="7"
+        class="empty"
+    >
+
+        Belum ada data pengunjung.
+
+    </td>
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<div class="table-footer">
+
+    <span id="tableInfo">
+
+        Menampilkan
+        {{ visitors|length }}
+        data pengunjung
+
+    </span>
+
+    <span>
+
+        Smart Visitor Management System
+
+    </span>
+
+</div>
+
+
+</section>
+
+
+</main>
+
+</div>
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script>
+
+/* =========================
+   DATE
+========================= */
+
+function updateDate() {
+
+    const element =
+        document.getElementById(
+            'currentDate'
+        );
+
+    const now =
+        new Date();
+
+    element.textContent =
+        now.toLocaleDateString(
+            'id-ID',
+            {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }
+        )
+        +
+        ' • '
+        +
+        now.toLocaleTimeString(
+            'id-ID',
+            {
+                hour: '2-digit',
+                minute: '2-digit'
+            }
+        );
+}
+
+updateDate();
+
+setInterval(
+    updateDate,
+    1000
+);
+
+
+/* =========================
+   SEARCH + FILTER + DATE
+   (bekerja sama, saling melengkapi)
+========================= */
+
+const searchInput =
+    document.getElementById(
+        'searchInput'
+    );
+
+let activeOnly = false;
+let selectedDate = null;
+
+
+function applyFilters() {
+
+    const keyword =
+        searchInput.value
+            .toLowerCase()
+            .trim();
+
+    let visible = 0;
+
+    document
+        .querySelectorAll('.visitor-row')
+        .forEach(row => {
+
+            const matchesSearch =
+                !keyword ||
+                row.innerText
+                    .toLowerCase()
+                    .includes(keyword);
+
+            const matchesActive =
+                !activeOnly ||
+                row.dataset.active === 'yes';
+
+            const matchesDate =
+                !selectedDate ||
+                row.dataset.date === selectedDate;
+
+            const show =
+                matchesSearch &&
+                matchesActive &&
+                matchesDate;
+
+            row.style.display =
+                show ? '' : 'none';
+
+            if (show) {
+                visible++;
+            }
+
+        });
+
+    // Sembunyikan header tanggal yang tidak relevan
+    // atau yang semua barisnya tersembunyi oleh filter lain
+    document
+        .querySelectorAll('.date-group-row')
+        .forEach(header => {
+
+            const date = header.dataset.date;
+
+            if (selectedDate && date !== selectedDate) {
+                header.style.display = 'none';
+                return;
+            }
+
+            const hasVisibleRow =
+                [...document.querySelectorAll(
+                    '.visitor-row[data-date="' + date + '"]'
+                )].some(row => row.style.display !== 'none');
+
+            header.style.display =
+                hasVisibleRow ? '' : 'none';
+
+        });
+
+    let info =
+        'Menampilkan ' + visible + ' data pengunjung';
+
+    if (activeOnly) {
+        info = 'Menampilkan ' + visible + ' pengunjung aktif';
+    }
+
+    if (selectedDate) {
+        info += ' pada tanggal terpilih';
+    }
+
+    document.getElementById('tableInfo').textContent = info;
+
+}
+
+
+searchInput.addEventListener('input', applyFilters);
+
+
+/* =========================
+   FILTER ACTIVE
+========================= */
+
+function filterActive() {
+
+    activeOnly = !activeOnly;
+
+    document.getElementById('filterButton').textContent =
+        activeOnly ? 'Semua' : 'Filter';
+
+    applyFilters();
+
+}
+
+
+/* =========================
+   FILTER PER TANGGAL
+========================= */
+
+function toggleDateFilter(date) {
+
+    selectedDate =
+        (selectedDate === date) ? null : date;
+
+    document
+        .querySelectorAll('.date-group-toggle')
+        .forEach(button => {
+
+            button.classList.toggle(
+                'active',
+                button.dataset.date === selectedDate
+            );
+
+        });
+
+    applyFilters();
+
+}
+
+
+document
+    .querySelectorAll('.date-group-toggle')
+    .forEach(button => {
+
+        button.addEventListener('click', () => {
+            toggleDateFilter(button.dataset.date);
+        });
+
+    });
+
+
+/* =========================
+   CHECK OUT
+========================= */
+
+async function checkoutVisitor(
+    id,
+    nama
+) {
+
+    if (
+        !confirm(
+            'Apakah pengunjung "' +
+            nama +
+            '" sudah selesai berkunjung?'
+        )
+    ) {
+        return;
+    }
+
+
+    const buttons =
+        document.querySelectorAll(
+            '.checkout-button'
+        );
+
+
+    buttons.forEach(
+        button => {
+
+            button.disabled =
+                true;
+
+        }
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                '/checkout/' + id,
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    }
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (result.success) {
+
+            alert(
+                'Check-Out berhasil untuk '
+                +
+                nama
+                +
+                '.'
+            );
+
+
+            window.location.reload();
+
+        }
+
+        else {
+
+            alert(
+                (
+                    result.message
+                    ||
+                    'Check-Out gagal.'
+                )
+            );
+
+
+            buttons.forEach(
+                button => {
+
+                    button.disabled =
+                        false;
+
+                }
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+
+        alert(
+            'Terjadi kesalahan saat melakukan Check-Out.'
+        );
+
+
+        buttons.forEach(
+            button => {
+
+                button.disabled =
+                    false;
+
+            }
+        );
+
+    }
+
+}
+
+
+/* =========================
+   CHECKOUT BUTTON EVENT
+========================= */
+
+document
+    .querySelectorAll(
+        '.checkout-button'
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                'click',
+                () => {
+
+                    checkoutVisitor(
+                        button.dataset.id,
+                        button.dataset.nama
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+/* =========================
+   EXPORT CSV
+========================= */
+
+function exportTable() {
+
+    let csv = [
+        [
+            'Pengunjung',
+            'Identitas',
+            'Bertemu Dengan',
+            'Keperluan',
+            'Check-In',
+            'Status',
+            'Kartu'
+        ]
+    ];
+
+
+    document
+        .querySelectorAll(
+            '#visitorTable tr.visitor-row'
+        )
+        .forEach(
+            row => {
+
+                if (
+                    row.style.display
+                    === 'none'
+                ) {
+                    return;
+                }
+
+
+                const cells =
+                    row.querySelectorAll(
+                        'td'
+                    );
+
+
+                if (
+                    cells.length < 7
+                ) {
+                    return;
+                }
+
+
+                csv.push(
+                    [
+                        cells[0]
+                            .innerText
+                            .replace(
+                                /\n/g,
+                                ' '
+                            )
+                            .trim(),
+
+                        cells[0]
+                            .innerText
+                            .split(
+                                '\n'
+                            )[1]
+                            ?.trim()
+                            || '',
+
+                        cells[1]
+                            .innerText
+                            .trim(),
+
+                        cells[2]
+                            .innerText
+                            .trim(),
+
+                        cells[3]
+                            .innerText
+                            .trim(),
+
+                        cells[4]
+                            .innerText
+                            .trim(),
+
+                        cells[5]
+                            .innerText
+                            .trim()
+                    ]
+                );
+
+            }
+        );
+
+
+    const blob =
+        new Blob(
+            [
+                '\ufeff'
+                +
+                csv
+                    .map(
+                        row =>
+                            row
+                                .map(
+                                    value =>
+                                        '"' +
+                                        value
+                                            .replace(
+                                                /"/g,
+                                                '""'
+                                            )
+                                        +
+                                        '"'
+                                )
+                                .join(',')
+                    )
+                    .join('\n')
+            ],
+            {
+                type:
+                    'text/csv;charset=utf-8;'
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            'a'
+        );
+
+
+    link.href =
+        url;
+
+    link.download =
+        'smart-visitor-'
+        +
+        new Date()
+            .toISOString()
+            .slice(
+                0,
+                10
+            )
+        +
+        '.csv';
+
+
+    link.click();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+}
+
+</script>
+<script>
+function toggleProfileMenu() {
+    const menu = document.getElementById("profileMenu");
+
+    menu.classList.toggle("show");
+}
+
+document.addEventListener("click", function(event) {
+
+    const wrapper = document.querySelector(".profile-wrapper");
+    const menu = document.getElementById("profileMenu");
+
+    if (wrapper && !wrapper.contains(event.target)) {
+        menu.classList.remove("show");
+    }
+
+});
+</script>
+<script>
+/* =========================
+   NOTIFIKASI & SUARA
+   (aktif otomatis setelah klik pertama, tanpa tombol)
+========================= */
+
+let previousNotificationCount = null;
+let audioContext = null;
+let audioEnabled = false;
+
+
+function enableNotificationSound() {
+
+    if (!audioContext) {
+        audioContext = new (
+            window.AudioContext ||
+            window.webkitAudioContext
+        )();
+    }
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+
+    audioEnabled = true;
+
+    console.log(
+        "Suara peringatan aktif."
+    );
+}
+
+
+function playNotificationSound() {
+
+    if (!audioEnabled || !audioContext) {
+
+        console.log(
+            "Audio belum diaktifkan."
+        );
+
+        return;
+    }
+
+    function ting(delay) {
+
+        setTimeout(() => {
+
+            const oscillator =
+                audioContext.createOscillator();
+
+            const gain =
+                audioContext.createGain();
+
+            oscillator.type = "sine";
+
+            oscillator.frequency.setValueAtTime(
+                880,
+                audioContext.currentTime
+            );
+
+            gain.gain.setValueAtTime(
+                0.0001,
+                audioContext.currentTime
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.35,
+                audioContext.currentTime + 0.03
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.0001,
+                audioContext.currentTime + 0.45
+            );
+
+            oscillator.connect(gain);
+            gain.connect(
+                audioContext.destination
+            );
+
+            oscillator.start();
+
+            oscillator.stop(
+                audioContext.currentTime + 0.45
+            );
+
+        }, delay);
+    }
+
+
+    // TING
+    ting(0);
+
+    // TING
+    ting(550);
+}
+
+
+// Mengecek jumlah notifikasi
+async function checkNotifications() {
+
+    try {
+
+        const response = await fetch(
+            "/api/notifications/count"
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+            return;
+        }
+
+        const count = data.count;
+
+        const badge =
+            document.getElementById(
+                "notificationBadge"
+            );
+
+        const bell =
+            document.getElementById(
+                "notificationBell"
+            );
+
+        // =========================
+        // TAMPILKAN BADGE
+        // =========================
+
+        if (count > 0) {
+
+            badge.textContent = count;
+            badge.style.display = "flex";
+
+        } else {
+
+            badge.style.display = "none";
+
+        }
+
+
+        // =========================
+        // TAMPILKAN PERINGATAN
+        // =========================
+
+        if (count > 0) {
+
+            showVisitorAlert(count);
+
+        }
+
+
+        // =========================
+        // ANIMASI LONCENG + SUARA
+        // =========================
+
+        if (
+            previousNotificationCount !== null &&
+            count > previousNotificationCount
+        ) {
+
+            playNotificationSound();
+
+            if (bell) {
+
+                bell.classList.remove(
+                    "has-notification"
+                );
+
+                void bell.offsetWidth;
+
+                bell.classList.add(
+                    "has-notification"
+                );
+
+            }
+
+        }
+
+
+        // Simpan jumlah terakhir
+        previousNotificationCount = count;
+
+    } catch (error) {
+
+        console.log(
+            "Gagal mengecek notifikasi:",
+            error
+        );
+
+    }
+}
+
+function showVisitorAlert(count) {
+
+    const alert =
+        document.getElementById("visitorAlert");
+
+    const message =
+        document.getElementById("visitorAlertMessage");
+
+    if (!alert || !message) {
+        return;
+    }
+
+    if (count === 1) {
+        message.textContent =
+            "Ada 1 pengunjung yang telah lebih dari 8 jam dan belum check-out.";
+    } else {
+        message.textContent =
+            `Ada ${count} pengunjung yang telah lebih dari 8 jam dan belum check-out.`;
+    }
+
+    alert.classList.add("show");
+}
+
+
+function closeVisitorAlert() {
+
+    const alert =
+        document.getElementById("visitorAlert");
+
+    if (alert) {
+        alert.classList.remove("show");
+    }
+}
+
+// Browser mengizinkan audio setelah klik pertama di halaman
+document.addEventListener(
+    "click",
+    enableNotificationSound,
+    { once: true }
+);
+
+// Cek saat halaman dibuka
+checkNotifications();
+
+// Cek setiap 30 detik
+setInterval(
+    checkNotifications,
+    30000
+);
+
+</script>
+</body>
+</html>

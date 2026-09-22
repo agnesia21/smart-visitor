@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Notifikasi - Smart Visitor</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 25px;
+
+            color: #172033;
+            text-decoration: none;
+
+            font-weight: 600;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #71849f;
+        }
+
+        .notification-card {
+            background: white;
+
+            border: 1px solid #e5ebf3;
+
+            border-radius: 18px;
+
+            padding: 22px;
+
+            margin-bottom: 14px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 18px;
+
+            box-shadow:
+                0 8px 25px rgba(20, 40, 70, 0.05);
+        }
+
+        .notification-icon {
+            width: 52px;
+            height: 52px;
+
+            min-width: 52px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 14px;
+
+            font-size: 24px;
+
+            background: #fff3f3;
+        }
+
+        .notification-card.card-alert
+        .notification-icon {
+            background: #fff7e6;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-size: 17px;
+
+            font-weight: 700;
+
+            margin-bottom: 6px;
+        }
+
+        .notification-message {
+            color: #71849f;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+        }
+
+        .notification-time {
+            margin-top: 8px;
+
+            color: #9aa9bc;
+
+            font-size: 12px;
+        }
+
+        .notification-action {
+            display: inline-block;
+
+            padding: 10px 16px;
+
+            background: #13213a;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 9px;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+        .empty {
+            background: white;
+
+            border: 1px solid #e5ebf3;
+
+            border-radius: 18px;
+
+            padding: 60px 20px;
+
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 45px;
+
+            margin-bottom: 15px;
+        }
+
+        .empty h2 {
+            margin-bottom: 8px;
+        }
+
+        .empty p {
+            color: #71849f;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <a href="{{ url_for('staff') }}" class="back">
+        ← Kembali ke Dashboard
+    </a>
+
+
+    <div class="header">
+
+        <h1>
+            🔔 Notifikasi
+        </h1>
+
+        <p>
+            Informasi yang membutuhkan perhatian petugas.
+        </p>
+
+    </div>
+
+
+    {% if notifications %}
+
+        {% for notification in notifications %}
+
+        <div class="notification-card
+            {% if notification.type == 'card' %}
+                card-alert
+            {% endif %}
+        ">
+
+            <div class="notification-icon">
+
+                {{ notification.icon }}
+
+            </div>
+
+
+            <div class="notification-content">
+
+                <div class="notification-title">
+
+                    {{ notification.title }}
+
+                </div>
+
+
+                <div class="notification-message">
+
+                    {{ notification.message }}
+
+                </div>
+
+
+                <div class="notification-time">
+
+                    Check-in:
+                    {{ notification.time.strftime('%d/%m/%Y %H:%M') }}
+
+                </div>
+
+            </div>
+
+
+            {% if notification.type == "warning" %}
+
+            <a
+    href="{{ url_for('staff') }}#daftar-pengunjung"
+    class="notification-action"
+>
+    Lihat
+</a>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty">
+
+            <div class="empty-icon">
+                ✓
+            </div>
+
+            <h2>
+                Tidak ada notifikasi
+            </h2>
+
+            <p>
+                Semua aktivitas pengunjung dalam kondisi normal.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+
+</html>
