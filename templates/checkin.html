@@ -1034,7 +1034,7 @@ async function processUserMessage(sentText, displayText) {
 
             errorMessage =
                 "⚠️ <b>Layanan AI sedang mencapai batas penggunaan.</b><br><br>" +
-                "Flask tetap berjalan normal. Silakan tunggu sampai kuota AI tersedia kembali.";
+                "Silakan tunggu sebentar dan coba kirim kembali pesan Anda.";
 
         } else if (
             error &&
@@ -1046,7 +1046,8 @@ async function processUserMessage(sentText, displayText) {
         ) {
 
             errorMessage =
-                "❌ Server sedang mengalami masalah.<br><br>" +
+                "❌ <b>Server sedang mengalami kendala.</b><br><br>" +
+                (error.message && error.message !== "HTTP 500" ? `<em>${error.message}</em><br><br>` : "") +
                 "Silakan coba lagi beberapa saat.";
 
         } else if (
@@ -1054,9 +1055,16 @@ async function processUserMessage(sentText, displayText) {
             error.name === "TypeError"
         ) {
 
-            errorMessage =
-                "❌ Tidak dapat terhubung ke server Flask.<br><br>" +
-                "Pastikan Flask sedang berjalan.";
+            const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+            if (isLocal) {
+                errorMessage =
+                    "❌ <b>Tidak dapat terhubung ke server Flask.</b><br><br>" +
+                    "Pastikan server Flask lokal sedang berjalan (<code>python app.py</code>).";
+            } else {
+                errorMessage =
+                    "❌ <b>Koneksi ke server terputus.</b><br><br>" +
+                    "Silakan refresh halaman atau coba kirim kembali pesan Anda.";
+            }
         }
 
         addMessage(

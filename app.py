@@ -42,6 +42,7 @@ def get_db_connection():
         "password": password,
         "database": database,
         "port": port,
+        "connection_timeout": 5,
     }
 
     ssl_ca = os.getenv("DB_SSL_CA")
@@ -49,6 +50,9 @@ def get_db_connection():
         conn_params["ssl_ca"] = ssl_ca
     elif os.getenv("DB_SSL_DISABLED", "").lower() in ("true", "1"):
         conn_params["ssl_disabled"] = True
+    else:
+        # TiDB Cloud dan database cloud lainnya membutuhkan SSL namun seringkali tanpa CA khusus
+        conn_params["ssl_verify_cert"] = os.getenv("DB_SSL_VERIFY_CERT", "false").lower() in ("true", "1")
 
     return mysql.connector.connect(**conn_params)
 
