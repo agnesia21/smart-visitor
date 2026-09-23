@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, Response
-import mysql.connector
+import psycopg2
+import psycopg2.extras
 from datetime import datetime
 import os
 import csv
@@ -30,31 +31,25 @@ else:
 
 
 def get_db_connection():
-    host = os.getenv("DB_HOST", "127.0.0.1")
-    user = os.getenv("DB_USER", "root")
-    password = os.getenv("DB_PASSWORD", "")
-    database = os.getenv("DB_NAME", "visitor_management")
-    port = int(os.getenv("DB_PORT", "3306"))
+    """Koneksi ke PostgreSQL (Supabase) via DATABASE_URL,
+    atau fallback ke variabel individual untuk development lokal."""
+    database_url = os.getenv("DATABASE_URL")
 
-    conn_params = {
-        "host": host,
-        "user": user,
-        "password": password,
-        "database": database,
-        "port": port,
-        "connection_timeout": 5,
-    }
+    if database_url:
+        # Normalisasi URI Supabase jika diawali postgres://
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        return psycopg2.connect(database_url, connect_timeout=10)
 
-    ssl_ca = os.getenv("DB_SSL_CA")
-    if ssl_ca:
-        conn_params["ssl_ca"] = ssl_ca
-    elif os.getenv("DB_SSL_DISABLED", "").lower() in ("true", "1"):
-        conn_params["ssl_disabled"] = True
-    else:
-        # TiDB Cloud dan database cloud lainnya membutuhkan SSL namun seringkali tanpa CA khusus
-        conn_params["ssl_verify_cert"] = os.getenv("DB_SSL_VERIFY_CERT", "false").lower() in ("true", "1")
-
-    return mysql.connector.connect(**conn_params)
+    # Fallback untuk development lokal
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST", "127.0.0.1"),
+        user=os.getenv("DB_USER", "postgres"),
+        password=os.getenv("DB_PASSWORD", ""),
+        dbname=os.getenv("DB_NAME", "visitor_management"),
+        port=int(os.getenv("DB_PORT", "5432")),
+        connect_timeout=10,
+    )
 
 NAMA_HARI = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 NAMA_BULAN = [
@@ -203,26 +198,69 @@ def validate_and_clean_field(field, value, context=None):
     return value, None
 
 
-def apply_visitor_updates(visitor_data, updates):
+def apply_visitor_updates(visitor_data, updates, user_message):
     applied = {}
     rejected = {}
 
-    candidate_fields = [
-        f for f in FIELD_ORDER if f in updates and updates[f] not in (None, "")
-    ]
-    ordered_fields = sorted(
-        candidate_fields,
-        key=lambda f: 0 if f == "jenis_identitas" else 1
-    )
+    message = str(user_message or "").strip()
 
-    for field in ordered_fields:
-        cleaned, error = validate_and_clean_field(field, updates[field], visitor_data)
+    if not message:
+        return applied, rejected
+
+    # Field yang sedang kosong
+    next_field = get_next_field(visitor_data)
+
+    if not next_field:
+        return applied, rejected
+
+    # Server hanya mengizinkan AI mengisi
+    # field berikutnya yang memang sedang ditanyakan.
+    if next_field not in updates:
+        return applied, rejected
+
+    candidate = updates.get(next_field)
+
+    if candidate in (None, ""):
+        return applied, rejected
+
+    # Untuk langkah pertama, nama HARUS berasal dari
+    # jawaban user secara langsung.
+    if next_field == "nama":
+        cleaned = message
+
+        # Jangan menerima kalimat pertanyaan sebagai nama
+        if len(cleaned) < 2:
+            rejected[next_field] = "Nama terlalu pendek."
+            return applied, rejected
+
+        cleaned, error = validate_and_clean_field(
+            "nama",
+            cleaned,
+            visitor_data
+        )
 
         if error:
-            rejected[field] = error
-        else:
-            visitor_data[field] = cleaned
-            applied[field] = cleaned
+            rejected[next_field] = error
+            return applied, rejected
+
+        visitor_data["nama"] = cleaned
+        applied["nama"] = cleaned
+
+        return applied, rejected
+
+    # Untuk field lainnya, validasi nilai dari AI.
+    cleaned, error = validate_and_clean_field(
+        next_field,
+        candidate,
+        visitor_data
+    )
+
+    if error:
+        rejected[next_field] = error
+        return applied, rejected
+
+    visitor_data[next_field] = cleaned
+    applied[next_field] = cleaned
 
     return applied, rejected
 
@@ -252,7 +290,7 @@ def tool_cari_staff(args):
 
     try:
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute("""
             SELECT nama FROM staff_accounts
             WHERE nama LIKE %s
@@ -357,6 +395,7 @@ def tool_simpan_data_pengunjung(visitor_data):
                 %s,
                 %s
             )
+            RETURNING id
         """
 
         values = (
@@ -372,9 +411,8 @@ def tool_simpan_data_pengunjung(visitor_data):
         )
 
         cursor.execute(sql, values)
+        visitor_id = cursor.fetchone()[0]
         db.commit()
-
-        visitor_id = cursor.lastrowid
 
         return {
             "success": True,
@@ -528,122 +566,49 @@ def build_system_instruction():
     """Instruksi sistem untuk AI Agent check-in berbasis tool calling."""
 
     return """
-Kamu adalah Smart Visitor Assistant, AI Agent yang bertugas MEMIMPIN
-seluruh proses check-in pengunjung kantor secara ramah, natural, dan
-cerdas — bukan sekadar mengikuti skrip pertanyaan tetap.
+Kamu adalah Smart Visitor Assistant, AI Agent yang bertugas memandu proses check-in pengunjung kantor secara ramah, sopan, dan TERSTRUKTUR BERURUTAN dari Langkah 1 sampai Langkah 8.
+
+=========================================================
+8 LANGKAH PROGRES CHECK-IN (WAJIB BERURUTAN)
+=========================================================
+Langkah 1: Nama Lengkap (nama) -> "Siapa nama lengkap Anda?"
+Langkah 2: Jenis Identitas (jenis_identitas) -> "Identitas apa yang Anda gunakan? (KTP/SIM/NIM)"
+Langkah 3: Nomor Identitas (nomor_identitas) -> "Boleh disebutkan nomor identitasnya?"
+Langkah 4: Nomor HP (no_hp) -> "Berapa nomor HP yang bisa dihubungi?"
+Langkah 5: Instansi / Asal (instansi) -> "Anda berasal dari instansi atau perusahaan mana?"
+Langkah 6: Bertemu Siapa (bertemu_dengan) -> "Anda ingin bertemu dengan siapa?"
+Langkah 7: Keperluan Kunjungan (keperluan) -> "Apa keperluan kunjungan Anda?"
+Langkah 8: Penitipan Kartu (status_kartu) -> "Apakah Anda menitipkan kartu identitas kepada petugas? (YA/TIDAK)"
 
 =========================================================
 TOOL YANG TERSEDIA
 =========================================================
-
-1. update_visitor_data
-   Simpan data pengunjung ke sistem begitu kamu yakin datanya valid.
-
-2. cek_nomor_identitas_valid
-   Cek format nomor identitas SEBELUM menyimpannya lewat
-   update_visitor_data.
-
-3. cari_staff
-   Cek apakah nama yang ingin ditemui pengunjung dikenal di data
-   internal.
-
-4. simpan_data_pengunjung
-   Commit final ke database. Sangat sensitif, ikuti aturan ketat di
-   bawah.
+1. update_visitor_data: Simpan data pengunjung yang valid ke sistem saat pengunjung menjawab.
+2. cek_nomor_identitas_valid: Cek validitas format nomor identitas SEBELUM menyimpannya ke update_visitor_data.
+3. cari_staff: Cek nama staff internal saat pengunjung menyebutkan nama orang yang ingin ditemui.
+4. simpan_data_pengunjung: Simpan permanen ke database setelah semua 8 data lengkap dan pengunjung sudah konfirmasi.
 
 =========================================================
-KAMU YANG MEMUTUSKAN ALUR, BUKAN URUTAN TETAP
+ATURAN UTAMA URUTAN PERTANYAAN (1 SAMPAI 8)
 =========================================================
-
-1. Sistem akan memberimu daftar field yang MASIH KOSONG beserta
-   pertanyaan default untuk masing-masing, dan satu field yang
-   DISARANKAN untuk ditanyakan berikutnya. Itu hanya saran default —
-   kamu boleh menyesuaikan urutan mengikuti alur percakapan yang
-   natural.
-
-2. Kalau pengunjung menyebutkan beberapa data sekaligus dalam satu
-   kalimat (misal "nama saya Budi, saya mau ketemu Pak Andi soal
-   magang"), EKSTRAK SEMUANYA sekaligus lewat satu panggilan
-   update_visitor_data dengan beberapa field terisi — jangan minta
-   pengunjung mengulang satu per satu.
-
-3. Setelah itu, tanyakan field yang MASIH kosong berikutnya, pilih
-   yang paling natural berdasarkan konteks percakapan (boleh ikuti
-   saran default kalau tidak ada alasan lain).
-
-4. JANGAN memanggil update_visitor_data untuk data yang belum jelas,
-   meragukan, atau hanya disebutkan sekilas. Jangan mengarang nilai.
-
-5. Jika pengunjung menyebutkan nomor identitas, panggil dulu
-   cek_nomor_identitas_valid (pakai jenis_identitas yang sudah/baru
-   diketahui). Kalau valid, baru panggil update_visitor_data untuk
-   menyimpannya. Kalau tidak valid, sampaikan alasannya dan minta
-   nomor yang benar — jangan disimpan.
-
-6. Jika pengunjung menyebutkan siapa yang ingin ditemui
-   (bertemu_dengan), panggil cari_staff untuk mengecek ejaan/keberadaan
-   nama tersebut di data internal. Kalau tidak ditemukan, itu BUKAN
-   alasan untuk menolak — cukup konfirmasikan ejaan ke pengunjung,
-   lalu tetap simpan lewat update_visitor_data begitu pengunjung
-   memastikan.
-
-7. Jika pengunjung mengoreksi data sebelumnya, panggil
-   update_visitor_data lagi untuk field itu dengan nilai yang benar.
-
-8. Jika pengunjung bertanya sesuatu yang masih berkaitan dengan proses
-   check-in, jawab singkat lalu lanjutkan proses.
-
-9. Jika pengunjung keluar dari topik, arahkan kembali dengan sopan.
+1. IKUTI URUTAN SECARA TERTIB: Selalu tanyakan field berikutnya yang masih kosong persis sesuai Langkah 1 sampai 8.
+2. JANGAN MELOMPATI LANGKAH: Jangan menanyakan langkah 4 sebelum langkah 2 dan 3 selesai, dsb.
+3. EKSTRAKSI DATA GANDA: Jika pengunjung menyebutkan beberapa data sekaligus dalam satu kalimat (misal "Saya Budi dari PT ABC"), panggil update_visitor_data untuk data tersebut, lalu lanjutkan menanyakan langkah pertama yang MASIH kosong.
+4. VALIDASI IDENTITAS: Jika pengunjung memberi nomor identitas, panggil cek_nomor_identitas_valid terlebih dahulu. Jika valid, panggil update_visitor_data lalu lanjutkan ke Langkah 4 (no_hp). Jika tidak valid, beritahu alasannya dan minta nomor identitas yang benar.
+5. PENITIPAN KARTU (Langkah 8): Wajib tanyakan "Apakah Anda menitipkan kartu identitas kepada petugas? (YA/TIDAK)". YA = 'dititipkan', TIDAK = 'tidak_dititipkan'.
 
 =========================================================
 KAPAN MENYIMPAN PERMANEN (simpan_data_pengunjung)
 =========================================================
-
-1. Begitu SEMUA field wajib sudah terisi, TAMPILKAN RINGKASAN lengkap
-   datanya ke pengunjung dan tanyakan apakah sudah benar.
-
-2. TUNGGU pengunjung memberi konfirmasi eksplisit (misal "ya", "benar",
-   "lanjutkan", "sudah sesuai").
-
-3. Baru setelah konfirmasi itu diberikan, panggil simpan_data_pengunjung.
-
-4. JANGAN PERNAH memanggil simpan_data_pengunjung sebelum ada
-   konfirmasi eksplisit tersebut, walaupun semua data sudah lengkap.
-
-5. Kalau simpan_data_pengunjung mengembalikan success=false karena
-   data ternyata belum lengkap, minta maaf singkat dan lanjutkan
-   menanyakan field yang kurang.
-
-6. Setelah simpan_data_pengunjung berhasil, sampaikan konfirmasi
-   check-in berhasil dengan ramah. Jangan mengklaim data tersimpan
-   sebelum tool ini benar-benar dipanggil dan berhasil.
+1. Begitu SEMUA 8 field sudah lengkap terisi, tampilkan ringkasan data dan tanyakan apakah sudah benar.
+2. TUNGGU konfirmasi eksplisit dari pengunjung (misal: "ya", "benar", "sudah sesuai", "lanjutkan").
+3. Hanya setelah ada konfirmasi, panggil `simpan_data_pengunjung`.
+4. Setelah simpan_data_pengunjung berhasil, sampaikan bahwa check-in telah berhasil dicatat.
 
 =========================================================
-JENIS IDENTITAS
+GAYA BAHASA
 =========================================================
-Yang diterima: KTP, SIM, NIM
-
-=========================================================
-PENITIPAN KARTU
-=========================================================
-Pertanyaan ini WAJIB ada sebelum ringkasan:
-"Apakah Anda menitipkan kartu identitas kepada petugas? (YA/TIDAK)"
-
-Jika pengunjung menjawab YA, simpan status_kartu sebagai:
-"dititipkan".
-
-Jika pengunjung menjawab TIDAK, simpan status_kartu sebagai:
-"tidak_dititipkan".
-
-Jangan melewati pertanyaan ini.
-
-=========================================================
-GAYA BICARA
-=========================================================
-Gunakan bahasa Indonesia. Ramah, natural, singkat, profesional.
-Emoji secukupnya. Jangan berubah menjadi chatbot umum.
-Balasanmu hanya berupa teks yang akan ditampilkan ke pengunjung —
-jangan sertakan penjelasan proses internal atau nama tool.
+Gunakan Bahasa Indonesia yang ramah, sopan, natural, dan ringkas.
 """
 
 def analyze_visitor_with_ai(visitor_data):
@@ -727,6 +692,10 @@ def index():
 
 @app.route("/checkin")
 def checkin():
+    # Reset session data agar pengunjung baru mulai dari langkah 1
+    session.pop("visitor_data", None)
+    session.pop("conversation", None)
+    session.pop("checkin_confirm_pending", None)
     return render_template("checkin.html")
 
 
@@ -853,18 +822,56 @@ def fallback_checkin_response(message):
         "applied_fields": {next_field: cleaned},
         "rejected_fields": {},
     }
+@app.route("/finalisasi_checkin", methods=["POST"])
+def finalisasi_checkin():
+    try:
+        visitor_data = session.get("visitor_data", {})
 
+        if not visitor_data:
+            return jsonify({
+                "success": False,
+                "message": "Data kunjungan tidak ditemukan."
+            }), 400
+
+        result = tool_simpan_data_pengunjung(visitor_data)
+
+        if not result.get("success"):
+            return jsonify({
+                "success": False,
+                "message": result.get(
+                    "message",
+                    "Data gagal disimpan."
+                )
+            }), 500
+
+        name = visitor_data.get("nama", "")
+
+        # Bersihkan sesi setelah berhasil disimpan
+        session.pop("visitor_data", None)
+        session.pop("conversation", None)
+        session.pop("checkin_confirm_pending", None)
+
+        return jsonify({
+            "success": True,
+            "message": "Check-In berhasil.",
+            "nama": name,
+            "visitor_id": result.get("visitor_id"),
+            "ai_analysis": result.get("ai_analysis")
+        })
+
+    except Exception as e:
+        print("ERROR FINALISASI CHECK-IN:", e)
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 @app.route("/ask_ai", methods=["POST"])
 def ask_ai():
-
     try:
         data = request.get_json() or {}
         message = str(data.get("message", "")).strip()
-
-        if gemini_client is None:
-            print("[WARN] Gemini API tidak tersedia. Menggunakan fallback check-in.")
-            return jsonify(fallback_checkin_response(message))
 
         if not message:
             return jsonify({
@@ -872,8 +879,91 @@ def ask_ai():
                 "message": "Pesan tidak boleh kosong."
             }), 400
 
-
         visitor_data = session.get("visitor_data", {})
+
+        # =====================================================
+        # KONFIRMASI CHECK-IN
+        # =====================================================
+        if session.get("checkin_confirm_pending"):
+
+            normalized = message.lower().strip()
+
+            confirm_words = [
+                "ya",
+                "iya",
+                "y",
+                "benar",
+                "betul",
+                "lanjut",
+                "lanjutkan",
+                "konfirmasi",
+                "sudah benar",
+                "sudah sesuai",
+                "ya, check-in",
+                "check-in"
+            ]
+
+            is_confirmed = any(
+                word in normalized
+                for word in confirm_words
+            )
+
+            if is_confirmed:
+
+                print("[CHECK-IN] Konfirmasi diterima.")
+                print("[CHECK-IN] Menyimpan data:", visitor_data)
+
+                result = tool_simpan_data_pengunjung(visitor_data)
+
+                if result.get("success"):
+
+                    name = visitor_data.get("nama", "")
+
+                    session.pop("visitor_data", None)
+                    session.pop("conversation", None)
+                    session.pop("checkin_confirm_pending", None)
+
+                    return jsonify({
+                        "success": True,
+                        "reply": (
+                            "🎉 <b>Check-In Berhasil!</b><br><br>"
+                            f"Selamat datang, <b>{name}</b>.<br><br>"
+                            "Data kunjungan Anda telah dicatat."
+                        ),
+                        "visitor_data": visitor_data,
+                        "completed": True,
+                        "finalized": True,
+                        "visitor_id": result.get("visitor_id"),
+                        "ai_analysis": result.get("ai_analysis"),
+                        "applied_fields": visitor_data,
+                        "rejected_fields": {}
+                    })
+
+                else:
+
+                    print("[ERROR] Gagal menyimpan:", result)
+
+                    return jsonify({
+                        "success": False,
+                        "message": result.get(
+                            "message",
+                            "Gagal menyimpan data pengunjung."
+                        )
+                    }), 500
+
+        # =====================================================
+        # GEMINI
+        # =====================================================
+
+        if gemini_client is None:
+            print("[WARN] Gemini API tidak tersedia. Menggunakan fallback check-in.")
+            return jsonify(fallback_checkin_response(message))
+
+        # =====================================================
+        # KODE LAMA ask_ai DILANJUTKAN DI SINI
+        # =====================================================
+
+    
         history = session.get("conversation", [])
 
         missing_fields = [
@@ -895,18 +985,18 @@ def ask_ai():
         else:
             missing_lines = "(tidak ada, semua field wajib sudah terisi)"
 
+        step_number = (8 - len(missing_fields) + 1) if missing_fields else 8
+
         prompt_context = f"""
 =========================================================
-STATUS SISTEM SAAT INI
+STATUS PROGRES CHECK-IN (Langkah 1 sampai 8)
 =========================================================
-
-Data yang sudah diketahui:
+Data yang sudah terisi:
 {filled_data_text}
 
-Field yang masih kosong (urutan default, boleh kamu sesuaikan):
-{missing_lines}
-
-Field yang disarankan untuk ditanyakan berikutnya: {suggested_next_field or "(tidak ada)"}
+Langkah saat ini: Langkah {step_number} dari 8
+Field berikutnya yang WAJIB ditanyakan: {suggested_next_field or '(Semua data lengkap, tampilkan ringkasan dan minta konfirmasi)'}
+Pertanyaan panduan: {FIELD_QUESTIONS.get(suggested_next_field, '') if suggested_next_field else ''}
 """
 
 
@@ -970,7 +1060,11 @@ Field yang disarankan untuk ditanyakan berikutnya: {suggested_next_field or "(ti
                     args = {}
 
                 if fc.name == "update_visitor_data":
-                    applied, rejected = apply_visitor_updates(visitor_data, args)
+                    applied, rejected = apply_visitor_updates(
+                        visitor_data,
+                        args,
+                        message
+                    )
                     applied_all.update(applied)
                     rejected_all.update(rejected)
                     session["visitor_data"] = visitor_data
@@ -1170,6 +1264,7 @@ def save_checkin():
                 %s,
                 %s
             )
+            RETURNING id
         """
 
         values = (
@@ -1185,9 +1280,8 @@ def save_checkin():
         )
 
         cursor.execute(sql, values)
+        visitor_id = cursor.fetchone()[0]
         db.commit()
-
-        visitor_id = cursor.lastrowid
 
         return jsonify({
             "success": True,
@@ -1292,7 +1386,7 @@ def get_visitor_for_checkout(nomor_identitas):
     try:
 
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
             SELECT
@@ -1419,7 +1513,7 @@ def login():
 
     try:
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
             SELECT id, nama, username, password, role
@@ -1488,7 +1582,7 @@ def staff_notifications():
 
     try:
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Ambil pengunjung yang masih berada di kantor
         cursor.execute("""
@@ -1581,13 +1675,13 @@ def notification_count():
 
     try:
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
             SELECT COUNT(*) AS total
             FROM visitors
             WHERE status = 'checked_in'
-            AND check_in <= DATE_SUB(NOW(), INTERVAL 8 HOUR)
+            AND check_in <= NOW() - INTERVAL '8 hours'
         """)
 
         result = cursor.fetchone()
@@ -1629,7 +1723,7 @@ def staff():
 
         db = get_db_connection()
 
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
             SELECT
@@ -1858,7 +1952,7 @@ def staff_profile_password():
 
     try:
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
             SELECT password FROM staff_accounts WHERE id = %s
@@ -1920,7 +2014,7 @@ def staff_laporan():
 
     try:
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("SELECT COUNT(*) AS total FROM visitors")
         total_kunjungan = cursor.fetchone()["total"]
@@ -2008,7 +2102,7 @@ def staff_laporan_download():
 
     try:
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("SELECT COUNT(*) AS total FROM visitors")
         total_kunjungan = cursor.fetchone()["total"]
@@ -2102,28 +2196,24 @@ def staff_laporan_download():
             db.close()
 
 
-@app.errorhandler(mysql.connector.Error)
+@app.errorhandler(psycopg2.Error)
 def handle_db_error(e):
     return (
         f"""
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 650px; margin: 50px auto; padding: 24px; border: 1px solid #fed7d7; border-radius: 12px; background: #fff5f5; color: #2d3748; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
             <h2 style="color: #e53e3e; margin-top: 0;">⚠️ Koneksi Database Gagal</h2>
-            <p>Aplikasi Smart Visitor tidak dapat terhubung ke database MySQL.</p>
+            <p>Aplikasi Smart Visitor tidak dapat terhubung ke database.</p>
             <div style="background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #feb2b2; font-family: monospace; font-size: 13px; color: #c53030; word-break: break-all; margin: 15px 0;">
                 {e}
             </div>
             <hr style="border: none; border-top: 1px solid #fed7d7; margin: 20px 0;">
             <h3 style="font-size: 16px; margin-bottom: 8px;">Langkah Konfigurasi di Vercel:</h3>
             <ol style="font-size: 14px; line-height: 1.8; padding-left: 20px;">
-                <li>Pastikan database MySQL cloud aktif (misal: <strong>TiDB Cloud Serverless</strong> atau <strong>Aiven MySQL</strong>).</li>
-                <li>Import skema tabel menggunakan file <code>schema.sql</code> yang tersedia di repositori.</li>
-                <li>Buka dashboard Vercel Anda: <strong>Project &gt; Settings &gt; Environment Variables</strong>, lalu tambahkan:
+                <li>Pastikan database Supabase aktif.</li>
+                <li>Import skema tabel menggunakan file <code>schema.sql</code> di SQL Editor Supabase.</li>
+                <li>Buka dashboard Vercel: <strong>Project &gt; Settings &gt; Environment Variables</strong>, tambahkan:
                     <ul style="margin-top: 6px;">
-                        <li><code>DB_HOST</code> : host database cloud Anda</li>
-                        <li><code>DB_USER</code> : username database</li>
-                        <li><code>DB_PASSWORD</code> : password database</li>
-                        <li><code>DB_NAME</code> : visitor_management</li>
-                        <li><code>DB_PORT</code> : 3306 (atau port database cloud Anda)</li>
+                        <li><code>DATABASE_URL</code> : Connection string PostgreSQL dari Supabase</li>
                         <li><code>GEMINI_API_KEY</code> : API Key Google Gemini Anda</li>
                     </ul>
                 </li>
