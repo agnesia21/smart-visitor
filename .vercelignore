@@ -1,0 +1,11 @@
+.env
+.env.*
+.git
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+app_backup_sebelum_fallback.py
+test_gemini.py

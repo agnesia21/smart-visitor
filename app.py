@@ -10,27 +10,47 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+)
 
-app.secret_key = "smart-visitor-secret-key"
+app.secret_key = os.getenv("SECRET_KEY", "smart-visitor-secret-key")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     gemini_client = genai.Client(api_key=GEMINI_API_KEY)
-    print("✅ Gemini AI siap digunakan.")
+    print("[OK] Gemini AI siap digunakan.")
 else:
     gemini_client = None
-    print("⚠️ GEMINI_API_KEY belum ditemukan.")
+    print("[WARN] GEMINI_API_KEY belum ditemukan.")
 
 
 def get_db_connection():
-    return mysql.connector.connect(
-        host="127.0.0.1",
-        user="root",
-        password="",
-        database="visitor_management"
-    )
+    host = os.getenv("DB_HOST", "127.0.0.1")
+    user = os.getenv("DB_USER", "root")
+    password = os.getenv("DB_PASSWORD", "")
+    database = os.getenv("DB_NAME", "visitor_management")
+    port = int(os.getenv("DB_PORT", "3306"))
+
+    conn_params = {
+        "host": host,
+        "user": user,
+        "password": password,
+        "database": database,
+        "port": port,
+    }
+
+    ssl_ca = os.getenv("DB_SSL_CA")
+    if ssl_ca:
+        conn_params["ssl_ca"] = ssl_ca
+    elif os.getenv("DB_SSL_DISABLED", "").lower() in ("true", "1"):
+        conn_params["ssl_disabled"] = True
+
+    return mysql.connector.connect(**conn_params)
 
 NAMA_HARI = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 NAMA_BULAN = [
@@ -835,14 +855,12 @@ def fallback_checkin_response(message):
 def ask_ai():
 
     try:
+        data = request.get_json() or {}
+        message = str(data.get("message", "")).strip()
 
         if gemini_client is None:
-            print("⚠️ Gemini API tidak tersedia. Menggunakan fallback check-in.")
+            print("[WARN] Gemini API tidak tersedia. Menggunakan fallback check-in.")
             return jsonify(fallback_checkin_response(message))
-
-        data = request.get_json() or {}
-
-        message = str(data.get("message", "")).strip()
 
         if not message:
             return jsonify({
@@ -1034,7 +1052,7 @@ Field yang disarankan untuk ditanyakan berikutnya: {suggested_next_field or "(ti
             or "quota" in error_text.lower()
             or "rate limit" in error_text.lower()
         ):
-            print("⚠️ Gemini quota/rate limit. Menggunakan fallback check-in.")
+            print("[WARN] Gemini quota/rate limit. Menggunakan fallback check-in.")
             return jsonify(fallback_checkin_response(message))
 
         return jsonify({
@@ -2078,6 +2096,40 @@ def staff_laporan_download():
 
         if db:
             db.close()
+
+
+@app.errorhandler(mysql.connector.Error)
+def handle_db_error(e):
+    return (
+        f"""
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 650px; margin: 50px auto; padding: 24px; border: 1px solid #fed7d7; border-radius: 12px; background: #fff5f5; color: #2d3748; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+            <h2 style="color: #e53e3e; margin-top: 0;">⚠️ Koneksi Database Gagal</h2>
+            <p>Aplikasi Smart Visitor tidak dapat terhubung ke database MySQL.</p>
+            <div style="background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #feb2b2; font-family: monospace; font-size: 13px; color: #c53030; word-break: break-all; margin: 15px 0;">
+                {e}
+            </div>
+            <hr style="border: none; border-top: 1px solid #fed7d7; margin: 20px 0;">
+            <h3 style="font-size: 16px; margin-bottom: 8px;">Langkah Konfigurasi di Vercel:</h3>
+            <ol style="font-size: 14px; line-height: 1.8; padding-left: 20px;">
+                <li>Pastikan database MySQL cloud aktif (misal: <strong>TiDB Cloud Serverless</strong> atau <strong>Aiven MySQL</strong>).</li>
+                <li>Import skema tabel menggunakan file <code>schema.sql</code> yang tersedia di repositori.</li>
+                <li>Buka dashboard Vercel Anda: <strong>Project &gt; Settings &gt; Environment Variables</strong>, lalu tambahkan:
+                    <ul style="margin-top: 6px;">
+                        <li><code>DB_HOST</code> : host database cloud Anda</li>
+                        <li><code>DB_USER</code> : username database</li>
+                        <li><code>DB_PASSWORD</code> : password database</li>
+                        <li><code>DB_NAME</code> : visitor_management</li>
+                        <li><code>DB_PORT</code> : 3306 (atau port database cloud Anda)</li>
+                        <li><code>GEMINI_API_KEY</code> : API Key Google Gemini Anda</li>
+                    </ul>
+                </li>
+                <li>Redeploy aplikasi di Vercel setelah variabel disimpan.</li>
+            </ol>
+        </div>
+        """,
+        500,
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

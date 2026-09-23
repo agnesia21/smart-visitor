@@ -15,3 +15,9 @@ instance/
 # Backup files
 *_backup*
 *backup*
+
+# Vercel
+.vercel/
+
+# Local test scripts
+test_*.py
