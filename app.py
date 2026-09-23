@@ -1308,44 +1308,6 @@ def save_checkin():
             db.close()
 
 
-@app.route("/finalisasi_checkin", methods=["POST"])
-def finalisasi_checkin():
-    """Fallback manual: melakukan hal yang PERSIS SAMA dengan tool
-    simpan_data_pengunjung yang biasanya dipanggil AI sendiri. Berguna
-    sebagai jaring pengaman kalau frontend masih ingin menyediakan
-    tombol konfirmasi eksplisit, atau AI gagal memanggil tool-nya."""
-
-    try:
-        visitor_data = session.get("visitor_data", {})
-
-        result = tool_simpan_data_pengunjung(visitor_data)
-
-        if not result.get("success"):
-            status_code = 400 if "missing_fields" in result else 500
-            return jsonify({
-                "success": False,
-                "message": result.get("message", "Gagal menyimpan data."),
-                "missing_fields": result.get("missing_fields", []),
-            }), status_code
-
-        session.pop("visitor_data", None)
-        session.pop("conversation", None)
-
-        return jsonify({
-            "success": True,
-            "message": "Check-in berhasil difinalisasi.",
-            "visitor_id": result.get("visitor_id"),
-            "ai_analysis": result.get("ai_analysis"),
-        })
-
-    except Exception as e:
-        print("ERROR FINALISASI CHECKIN:", e)
-
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 500
-
 
 @app.route("/ai/analyze", methods=["POST"])
 def ai_analyze():
