@@ -1,520 +1,554 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Smart Visitor — Laporan Kunjungan</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>Smart Visitor — Laporan Kunjungan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<style>
-:root {
-    --line: #e8eef6;
-    --muted: #8a9ab0;
-    --navy: #14213d;
-    --green: #15875a;
-    --red: #c83942;
-}
+    <style>
+        :root {
+            --line: #e8eef6;
+            --muted: #8a9ab0;
+            --navy: #14213d;
+            --green: #15875a;
+            --red: #c83942;
+        }
 
-* {
-    box-sizing: border-box;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    margin: 0;
-    padding: 0;
-}
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-body {
-    background: #f6f8fb;
-    color: #1a2b44;
-}
+        body {
+            background: #f6f8fb;
+            color: #1a2b44;
+        }
 
-.app {
-    display: flex;
-    min-height: 100vh;
-}
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
 
-/* SIDEBAR (sama seperti dashboard) */
+        /* SIDEBAR (sama seperti dashboard) */
 
-.sidebar {
-    width: 245px;
-    background: linear-gradient(180deg, #0c1e38, #122b4b);
-    color: white;
-    position: fixed;
-    inset: 0 auto 0 0;
-    display: flex;
-    flex-direction: column;
-    padding: 24px 16px;
-    z-index: 20;
-}
+        .sidebar {
+            width: 245px;
+            background: linear-gradient(180deg, #0c1e38, #122b4b);
+            color: white;
+            position: fixed;
+            inset: 0 auto 0 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            z-index: 20;
+        }
 
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 6px 10px 28px;
-}
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 10px 28px;
+        }
 
-.brand-logo {
-    width: 42px;
-    height: 42px;
-    border-radius: 13px;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg, #5d9cf0, #7467e8);
-    font-size: 22px;
-    font-weight: 800;
-}
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #5d9cf0, #7467e8);
+            font-size: 22px;
+            font-weight: 800;
+        }
 
-.brand-name {
-    font-size: 17px;
-    font-weight: 800;
-    letter-spacing: .4px;
-}
+        .brand-name {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: .4px;
+        }
 
-.brand-sub {
-    color: #9db1cb;
-    font-size: 9px;
-    margin-top: 2px;
-    letter-spacing: .3px;
-}
+        .brand-sub {
+            color: #9db1cb;
+            font-size: 9px;
+            margin-top: 2px;
+            letter-spacing: .3px;
+        }
 
-.nav-title {
-    color: #7188a7;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.1px;
-    padding: 0 12px 9px;
-    text-transform: uppercase;
-}
+        .nav-title {
+            color: #7188a7;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.1px;
+            padding: 0 12px 9px;
+            text-transform: uppercase;
+        }
 
-.nav {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
 
-.nav a {
-    text-decoration: none;
-    color: #b9c8dc;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 12px;
-    border-radius: 10px;
-    font-size: 13px;
-    transition: .2s;
-}
+        .nav a {
+            text-decoration: none;
+            color: #b9c8dc;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            transition: .2s;
+        }
 
-.nav a:hover {
-    background: #ffffff12;
-    color: white;
-}
+        .nav a:hover {
+            background: #ffffff12;
+            color: white;
+        }
 
-.nav a.active {
-    background: #24518a;
-    color: white;
-    box-shadow: inset 3px 0 #73a9ef;
-}
+        .nav a.active {
+            background: #24518a;
+            color: white;
+            box-shadow: inset 3px 0 #73a9ef;
+        }
 
-.nav-icon {
-    width: 20px;
-    text-align: center;
-    font-size: 16px;
-}
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
 
-/* MAIN */
+        /* MAIN */
 
-.main {
-    margin-left: 245px;
-    width: calc(100% - 245px);
-    padding: 25px 34px 40px;
-}
+        .main {
+            margin-left: 245px;
+            width: calc(100% - 245px);
+            padding: 25px 34px 40px;
+        }
 
-.topbar {
-    height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-}
+        .topbar {
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
 
-.eyebrow {
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 3px;
-}
+        .eyebrow {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 3px;
+        }
 
-.topbar-left h1 {
-    font-size: 22px;
-    letter-spacing: -.4px;
-}
+        .topbar-left h1 {
+            font-size: 22px;
+            letter-spacing: -.4px;
+        }
 
-/* STAT CARDS */
+        /* STAT CARDS */
 
-.stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-}
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
 
-.stat-card {
-    background: white;
-    border: 1px solid #e8eef6;
-    border-radius: 15px;
-    padding: 17px;
-    min-height: 110px;
-    box-shadow: 0 7px 22px #1a33520a;
-}
+        .stat-card {
+            background: white;
+            border: 1px solid #e8eef6;
+            border-radius: 15px;
+            padding: 17px;
+            min-height: 110px;
+            box-shadow: 0 7px 22px #1a33520a;
+        }
 
-.stat-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+        .stat-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-.stat-title {
-    color: #71849f;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .35px;
-}
+        .stat-title {
+            color: #71849f;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .35px;
+        }
 
-.stat-icon {
-    width: 35px;
-    height: 35px;
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    font-size: 16px;
-}
+        .stat-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+        }
 
-.icon-blue { background: #eaf3ff; }
-.icon-green { background: #e7f8f0; }
-.icon-orange { background: #fff3dd; }
-.icon-purple { background: #eeeaff; }
+        .icon-blue {
+            background: #eaf3ff;
+        }
 
-.stat-number {
-    font-size: 26px;
-    font-weight: 800;
-    margin-top: 10px;
-    letter-spacing: -1px;
-}
+        .icon-green {
+            background: #e7f8f0;
+        }
 
-.stat-caption {
-    color: #8a9ab0;
-    font-size: 10px;
-    margin-top: 2px;
-}
+        .icon-orange {
+            background: #fff3dd;
+        }
 
-/* REPORT SECTION */
+        .icon-purple {
+            background: #eeeaff;
+        }
 
-.report-section {
-    background: white;
-    border: 1px solid #e8eef6;
-    border-radius: 16px;
-    padding: 22px;
-    box-shadow: 0 7px 22px #1a33520a;
-}
+        .stat-number {
+            font-size: 26px;
+            font-weight: 800;
+            margin-top: 10px;
+            letter-spacing: -1px;
+        }
 
-.section-title h2 {
-    font-size: 16px;
-    margin-bottom: 3px;
-}
+        .stat-caption {
+            color: #8a9ab0;
+            font-size: 10px;
+            margin-top: 2px;
+        }
 
-.section-title p {
-    color: var(--muted);
-    font-size: 10px;
-    margin-bottom: 18px;
-}
+        /* REPORT SECTION */
 
-.chart-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 9px 0;
-    border-bottom: 1px solid #f1f4f9;
-}
+        .report-section {
+            background: white;
+            border: 1px solid #e8eef6;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 7px 22px #1a33520a;
+        }
 
-.chart-row:last-child {
-    border-bottom: none;
-}
+        .section-title h2 {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
 
-.chart-date {
-    width: 130px;
-    flex-shrink: 0;
-    font-size: 11px;
-    color: #445068;
-    font-weight: 700;
-}
+        .section-title p {
+            color: var(--muted);
+            font-size: 10px;
+            margin-bottom: 18px;
+        }
 
-.chart-bar-wrap {
-    flex: 1;
-    background: #eef2f7;
-    border-radius: 999px;
-    height: 12px;
-    overflow: hidden;
-}
+        .chart-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 0;
+            border-bottom: 1px solid #f1f4f9;
+        }
 
-.chart-bar {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #5c91df, #7669e7);
-}
+        .chart-row:last-child {
+            border-bottom: none;
+        }
 
-.chart-value {
-    width: 60px;
-    text-align: right;
-    flex-shrink: 0;
-    font-size: 11px;
-    font-weight: 800;
-    color: #1a2b44;
-}
+        .chart-date {
+            width: 130px;
+            flex-shrink: 0;
+            font-size: 11px;
+            color: #445068;
+            font-weight: 700;
+        }
 
-.empty {
-    text-align: center;
-    padding: 40px 10px;
-    color: #8a9ab0;
-    font-size: 12px;
-}
+        .chart-bar-wrap {
+            flex: 1;
+            background: #eef2f7;
+            border-radius: 999px;
+            height: 12px;
+            overflow: hidden;
+        }
 
-@media(max-width:850px) {
-    .sidebar { width: 74px; padding: 18px 10px; }
-    .brand-copy, .nav-title, .nav a span:not(.nav-icon) { display: none; }
-    .nav a { justify-content: center; padding: 12px 8px; }
-    .main { margin-left: 74px; width: calc(100% - 74px); padding: 20px; }
-    .stats { grid-template-columns: repeat(2, 1fr); }
-}
+        .chart-bar {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #5c91df, #7669e7);
+        }
 
-@media(max-width:650px) {
-    .main { padding: 15px; }
-    .stats { grid-template-columns: 1fr; }
-    .chart-date { width: 90px; font-size: 10px; }
-}
+        .chart-value {
+            width: 60px;
+            text-align: right;
+            flex-shrink: 0;
+            font-size: 11px;
+            font-weight: 800;
+            color: #1a2b44;
+        }
 
-/* TOOLBAR DOWNLOAD */
+        .empty {
+            text-align: center;
+            padding: 40px 10px;
+            color: #8a9ab0;
+            font-size: 12px;
+        }
 
-.report-toolbar {
-    display: flex;
-    gap: 10px;
-}
+        @media(max-width:850px) {
+            .sidebar {
+                width: 74px;
+                padding: 18px 10px;
+            }
 
-.report-button {
-    height: 38px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    border-radius: 9px;
-    padding: 0 14px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    border: 1px solid var(--line);
-    background: white;
-    color: #445068;
-}
+            .brand-copy,
+            .nav-title,
+            .nav a span:not(.nav-icon) {
+                display: none;
+            }
 
-.report-button.primary {
-    background: var(--navy);
-    color: white;
-    border-color: var(--navy);
-}
+            .nav a {
+                justify-content: center;
+                padding: 12px 8px;
+            }
 
-.report-button:hover {
-    filter: brightness(0.97);
-}
+            .main {
+                margin-left: 74px;
+                width: calc(100% - 74px);
+                padding: 20px;
+            }
 
-/* PRINT MODE */
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
 
-@media print {
-    .sidebar,
-    .report-toolbar {
-        display: none !important;
-    }
+        @media(max-width:650px) {
+            .main {
+                padding: 15px;
+            }
 
-    .main {
-        margin-left: 0 !important;
-        width: 100% !important;
-        padding: 0 !important;
-    }
+            .stats {
+                grid-template-columns: 1fr;
+            }
 
-    body {
-        background: white;
-    }
+            .chart-date {
+                width: 90px;
+                font-size: 10px;
+            }
+        }
 
-    .stat-card,
-    .report-section {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-    }
-}
-</style>
+        /* TOOLBAR DOWNLOAD */
+
+        .report-toolbar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .report-button {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            border-radius: 9px;
+            padding: 0 14px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid var(--line);
+            background: white;
+            color: #445068;
+        }
+
+        .report-button.primary {
+            background: var(--navy);
+            color: white;
+            border-color: var(--navy);
+        }
+
+        .report-button:hover {
+            filter: brightness(0.97);
+        }
+
+        /* PRINT MODE */
+
+        @media print {
+
+            .sidebar,
+            .report-toolbar {
+                display: none !important;
+            }
+
+            .main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 0 !important;
+            }
+
+            body {
+                background: white;
+            }
+
+            .stat-card,
+            .report-section {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
-<div class="app">
+    <div class="app">
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
 
-    <div class="brand">
-        <div class="brand-logo">✦</div>
-        <div class="brand-copy">
-            <div class="brand-name">SMART VISITOR</div>
-            <div class="brand-sub">AI-POWERED VISITOR MANAGEMENT</div>
-        </div>
+            <div class="brand">
+                <div class="brand-logo">✦</div>
+                <div class="brand-copy">
+                    <div class="brand-name">SMART VISITOR</div>
+                    <div class="brand-sub">AI-POWERED VISITOR MANAGEMENT</div>
+                </div>
+            </div>
+
+            <div class="nav-title">Menu Utama</div>
+
+            <nav class="nav">
+                <a href="{{ url_for('staff') }}">
+                    <span class="nav-icon">⌂</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('staff') }}#daftar-pengunjung">
+                    <span class="nav-icon">♙</span>
+                    <span>Daftar Pengunjung</span>
+                </a>
+                <a href="/">
+                    <span class="nav-icon">＋</span>
+                    <span>Check-in Manual</span>
+                </a>
+                <a href="{{ url_for('staff_laporan') }}" class="active">
+                    <span class="nav-icon">▤</span>
+                    <span>Laporan</span>
+                </a>
+
+            </nav>
+
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+
+            <header class="topbar">
+                <div class="topbar-left">
+                    <div class="eyebrow">SMART VISITOR / LAPORAN</div>
+                    <h1>Laporan Kunjungan</h1>
+                </div>
+
+                <div class="report-toolbar">
+                    <button type="button" class="report-button" onclick="window.print()">
+                        🖨 Cetak / Simpan PDF
+                    </button>
+
+                    <a href="{{ url_for('staff_laporan_download') }}" class="report-button primary">
+                        ⬇ Download CSV
+                    </a>
+                </div>
+            </header>
+
+            <!-- STAT CARDS -->
+            <section class="stats">
+
+                <div class="stat-card">
+                    <div class="stat-head">
+                        <span class="stat-title">Total Kunjungan</span>
+                        <div class="stat-icon icon-purple">▥</div>
+                    </div>
+                    <div class="stat-number">{{ total_kunjungan }}</div>
+                    <div class="stat-caption">Seluruh data kunjungan</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-head">
+                        <span class="stat-title">Sudah Check-Out</span>
+                        <div class="stat-icon icon-green">✓</div>
+                    </div>
+                    <div class="stat-number">{{ sudah_checkout }}</div>
+                    <div class="stat-caption">Kunjungan selesai</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-head">
+                        <span class="stat-title">Masih di Kantor</span>
+                        <div class="stat-icon icon-blue">👥</div>
+                    </div>
+                    <div class="stat-number">{{ masih_di_kantor }}</div>
+                    <div class="stat-caption">Belum check-out</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-head">
+                        <span class="stat-title">Kartu Dititipkan</span>
+                        <div class="stat-icon icon-orange">🪪</div>
+                    </div>
+                    <div class="stat-number">{{ kartu_dititipkan }}</div>
+                    <div class="stat-caption">Belum dikembalikan</div>
+                </div>
+
+            </section>
+
+            <!-- KUNJUNGAN PER TANGGAL -->
+            <section class="report-section">
+
+                <div class="section-title">
+                    <h2>Kunjungan per Tanggal</h2>
+                    <p>Jumlah kunjungan dalam 30 hari terakhir yang tercatat</p>
+                </div>
+
+                {% if kunjungan_per_tanggal %}
+
+                {% for row in kunjungan_per_tanggal %}
+
+                <div class="chart-row">
+
+                    <div class="chart-date">
+                        {{ row.tanggal.strftime('%d %b %Y') }}
+                    </div>
+
+                    <div class="chart-bar-wrap">
+                        <div class="chart-bar" data-persen="{{ row.persen }}"></div>
+                    </div>
+
+                    <div class="chart-value">
+                        {{ row.jumlah }} orang
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+                {% else %}
+
+                <div class="empty">
+                    Belum ada data kunjungan untuk ditampilkan.
+                </div>
+
+                {% endif %}
+
+            </section>
+
+            <script>
+                document.querySelectorAll('.chart-bar').forEach(bar => {
+                    const persen = parseFloat(bar.dataset.persen) || 0;
+                    bar.style.width = persen + '%';
+                });
+            </script>
+
+        </main>
+
     </div>
-
-    <div class="nav-title">Menu Utama</div>
-
-    <nav class="nav">
-        <a href="{{ url_for('staff') }}">
-            <span class="nav-icon">⌂</span>
-            <span>Dashboard</span>
-        </a>
-        <a href="{{ url_for('staff') }}#daftar-pengunjung">
-            <span class="nav-icon">♙</span>
-            <span>Daftar Pengunjung</span>
-        </a>
-        <a href="/">
-            <span class="nav-icon">＋</span>
-            <span>Check-in Manual</span>
-        </a>
-        <a href="{{ url_for('staff_laporan') }}" class="active">
-            <span class="nav-icon">▤</span>
-            <span>Laporan</span>
-        </a>
-        <a href="#pengaturan">
-            <span class="nav-icon">⚙</span>
-            <span>Pengaturan</span>
-        </a>
-    </nav>
-
-</aside>
-
-<!-- MAIN -->
-<main class="main">
-
-    <header class="topbar">
-        <div class="topbar-left">
-            <div class="eyebrow">SMART VISITOR / LAPORAN</div>
-            <h1>Laporan Kunjungan</h1>
-        </div>
-
-        <div class="report-toolbar">
-            <button
-                type="button"
-                class="report-button"
-                onclick="window.print()"
-            >
-                🖨 Cetak / Simpan PDF
-            </button>
-
-            <a
-                href="{{ url_for('staff_laporan_download') }}"
-                class="report-button primary"
-            >
-                ⬇ Download CSV
-            </a>
-        </div>
-    </header>
-
-    <!-- STAT CARDS -->
-    <section class="stats">
-
-        <div class="stat-card">
-            <div class="stat-head">
-                <span class="stat-title">Total Kunjungan</span>
-                <div class="stat-icon icon-purple">▥</div>
-            </div>
-            <div class="stat-number">{{ total_kunjungan }}</div>
-            <div class="stat-caption">Seluruh data kunjungan</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-head">
-                <span class="stat-title">Sudah Check-Out</span>
-                <div class="stat-icon icon-green">✓</div>
-            </div>
-            <div class="stat-number">{{ sudah_checkout }}</div>
-            <div class="stat-caption">Kunjungan selesai</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-head">
-                <span class="stat-title">Masih di Kantor</span>
-                <div class="stat-icon icon-blue">👥</div>
-            </div>
-            <div class="stat-number">{{ masih_di_kantor }}</div>
-            <div class="stat-caption">Belum check-out</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-head">
-                <span class="stat-title">Kartu Dititipkan</span>
-                <div class="stat-icon icon-orange">🪪</div>
-            </div>
-            <div class="stat-number">{{ kartu_dititipkan }}</div>
-            <div class="stat-caption">Belum dikembalikan</div>
-        </div>
-
-    </section>
-
-    <!-- KUNJUNGAN PER TANGGAL -->
-<section class="report-section">
-
-    <div class="section-title">
-        <h2>Kunjungan per Tanggal</h2>
-        <p>Jumlah kunjungan dalam 30 hari terakhir yang tercatat</p>
-    </div>
-
-    {% if kunjungan_per_tanggal %}
-
-        {% for row in kunjungan_per_tanggal %}
-
-        <div class="chart-row">
-
-            <div class="chart-date">
-                {{ row.tanggal.strftime('%d %b %Y') }}
-            </div>
-
-            <div class="chart-bar-wrap">
-                <div class="chart-bar" data-persen="{{ row.persen }}"></div>
-            </div>
-
-            <div class="chart-value">
-                {{ row.jumlah }} orang
-            </div>
-
-        </div>
-
-        {% endfor %}
-
-    {% else %}
-
-        <div class="empty">
-            Belum ada data kunjungan untuk ditampilkan.
-        </div>
-
-    {% endif %}
-
-</section>
-
-<script>
-document.querySelectorAll('.chart-bar').forEach(bar => {
-    const persen = parseFloat(bar.dataset.persen) || 0;
-    bar.style.width = persen + '%';
-});
-</script>
-
-</main>
-
-</div>
 </body>
+
 </html>
